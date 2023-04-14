@@ -7,6 +7,7 @@ import { setupRouter } from './router'
 
 async function bootstrap() {
   const app = createApp(App)
+
   setupAssets()
 
   setupScrollbarStyle()

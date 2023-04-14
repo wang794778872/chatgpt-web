@@ -13,7 +13,7 @@ import { useUsingContext } from './hooks/useUsingContext'
 import HeaderComponent from './components/Header/index.vue'
 import { HoverButton, SvgIcon } from '@/components/common'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { useChatStore, usePromptStore } from '@/store'
+import { useChatStore, usePromptStore, useUserStore } from '@/store'
 import { fetchChatAPIProcess } from '@/api'
 import { t } from '@/locales'
 
@@ -26,7 +26,7 @@ const dialog = useDialog()
 const ms = useMessage()
 
 const chatStore = useChatStore()
-
+const userStore = useUserStore()
 useCopyCode()
 
 const { isMobile } = useBasicLayout()
@@ -35,7 +35,6 @@ const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom } = useScroll()
 const { usingContext, toggleUsingContext } = useUsingContext()
 
 const { uuid } = route.params as { uuid: string }
-
 const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
 const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !item.error)))
 
@@ -153,12 +152,17 @@ async function onConversation() {
       })
       updateChatSome(+uuid, dataSources.value.length - 1, { loading: false })
     }
-
-    await fetchChatAPIOnce()
+    userStore.userInfo.available_num--
+    if (userStore.userInfo.available_num < 0) {
+    //   console.log('额度用完')
+    }
+    else {
+      await fetchChatAPIOnce()
+      userStore.updateUserInfo({ available_num: userStore.userInfo.available_num })
+    }
   }
   catch (error: any) {
     const errorMessage = error?.message ?? t('common.wrong')
-
     if (error.message === 'canceled') {
       updateChatSome(
         +uuid,
@@ -170,7 +174,7 @@ async function onConversation() {
       scrollToBottomIfAtBottom()
       return
     }
-
+    userStore.updateUserInfo({ available_num: userStore.userInfo.available_num })
     const currentChat = getChatByUuidAndIndex(+uuid, dataSources.value.length - 1)
 
     if (currentChat?.text && currentChat.text !== '') {
@@ -209,7 +213,6 @@ async function onConversation() {
 async function onRegenerate(index: number) {
   if (loading.value)
     return
-
   controller = new AbortController()
 
   const { requestOptions } = dataSources.value[index]
@@ -467,6 +470,9 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <!-- <div style="position: fixed; width:100%; background-color: #b3ecff; text-align:center;">
+    域名容易被墙，关注公众号：<b>prompt工程师</b>，永久更新chatGPT国内访问网站！
+  </div> -->
   <div class="flex flex-col w-full h-full">
     <HeaderComponent
       v-if="isMobile"
@@ -474,9 +480,9 @@ onUnmounted(() => {
       @export="handleExport"
       @toggle-using-context="toggleUsingContext"
     />
+
     <main class="flex-1 overflow-hidden">
       <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto">
-        <marquee :scrollamount=5>公众号：prompt工程师，关注不走丢！</marquee>
         <div
           id="image-wrapper"
           class="w-full max-w-screen-xl m-auto dark:bg-[#101014]"

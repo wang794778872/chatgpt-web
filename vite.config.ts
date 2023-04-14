@@ -32,8 +32,8 @@ export default defineConfig((env) => {
     },
     plugins: setupPlugins(viteEnv),
     server: {
-      host: '127.0.0.1',
-      port: 6001,
+      host: '0.0.0.0',
+      port: 3002,
       open: false,
       proxy: {
         '/api': {

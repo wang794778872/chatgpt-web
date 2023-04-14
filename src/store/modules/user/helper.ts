@@ -1,11 +1,14 @@
 import { ss } from '@/utils/storage'
-
+import { defaultUserRedis } from '@/utils/storage/user_redis'
+import { useAuthStore } from '@/store'
 const LOCAL_NAME = 'userStorage'
 
 export interface UserInfo {
   avatar: string
   name: string
   description: string
+  id: string
+  available_num: number
 }
 
 export interface UserState {
@@ -13,11 +16,16 @@ export interface UserState {
 }
 
 export function defaultSetting(): UserState {
+  const user_id: string = defaultUserRedis()
+  const authStore = useAuthStore()
+  authStore.setToken(user_id)
   return {
     userInfo: {
       avatar: 'https://raw.githubusercontent.com/Chanzhaoyu/chatgpt-web/main/src/assets/avatar.jpg',
-      name: 'ChenZhaoYu',
-      description: 'Star on <a href="https://github.com/Chanzhaoyu/chatgpt-bot" class="text-blue-500" target="_blank" >Github</a>',
+      name: 'benhu',
+      description: 'Star on <a href="https://github.com/wang794778872/chatgpt-bot" class="text-blue-500" target="_blank" >Github</a>',
+      id: user_id,
+      available_num: 20, // 新用户默认20条
     },
   }
 }
@@ -28,5 +36,6 @@ export function getLocalState(): UserState {
 }
 
 export function setLocalState(setting: UserState): void {
+//   console.log(setting)
   ss.set(LOCAL_NAME, setting)
 }

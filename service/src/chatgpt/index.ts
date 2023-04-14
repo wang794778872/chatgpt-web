@@ -93,7 +93,6 @@ async function chatReplyProcess(options: RequestOptions) {
   const { message, lastContext, process, systemMessage } = options
   try {
     let options: SendMessageOptions = { timeoutMs }
-    global.console.log(message)
     if (apiModel === 'ChatGPTAPI') {
       if (isNotEmptyString(systemMessage))
         options.systemMessage = systemMessage
@@ -101,14 +100,12 @@ async function chatReplyProcess(options: RequestOptions) {
 
     if (lastContext != null) {
       if (apiModel === 'ChatGPTAPI')
+
         options.parentMessageId = lastContext.parentMessageId
       else
         options = { ...lastContext }
     }
-    global.console.dir(options)
 
-    global.console.log(__line)
-    global.console.log(message)
     const response = await api.sendMessage(message, {
       ...options,
       onProgress: (partialResponse) => {
@@ -120,7 +117,6 @@ async function chatReplyProcess(options: RequestOptions) {
   }
   catch (error: any) {
     const code = error.statusCode
-    global.console.log(error)
     if (Reflect.has(ErrorCodeMessage, code))
       return sendResponse({ type: 'Fail', message: ErrorCodeMessage[code] })
     return sendResponse({ type: 'Fail', message: error.message ?? 'Please check the back-end console' })

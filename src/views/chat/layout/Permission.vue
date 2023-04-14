@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { NButton, NInput, NModal, useMessage } from 'naive-ui'
 import { fetchVerify } from '@/api'
-import { useAuthStore } from '@/store'
+import { useAuthStore, useUserStore } from '@/store'
 import Icon403 from '@/icons/403.vue'
 
 interface Props {
@@ -11,6 +11,7 @@ interface Props {
 
 defineProps<Props>()
 
+const userStore = useUserStore()
 const authStore = useAuthStore()
 
 const ms = useMessage()
@@ -29,7 +30,10 @@ async function handleVerify() {
   try {
     loading.value = true
     await fetchVerify(secretKey)
-    authStore.setToken(secretKey)
+    // authStore.setToken(secretKey)
+    authStore.setToken(userStore.userInfo.id)
+    userStore.userInfo.available_num = 20 // 密钥验证通过给20条
+    userStore.updateUserInfo({ available_num: userStore.userInfo.available_num })
     ms.success('success')
     window.location.reload()
   }

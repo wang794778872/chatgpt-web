@@ -5,12 +5,13 @@ import { useRouter } from 'vue-router'
 import Sider from './sider/index.vue'
 import Permission from './Permission.vue'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { useAppStore, useAuthStore, useChatStore } from '@/store'
+import { useAppStore, useAuthStore, useChatStore, useUserStore } from '@/store'
 
 const router = useRouter()
 const appStore = useAppStore()
 const chatStore = useChatStore()
 const authStore = useAuthStore()
+const userStore = useUserStore()
 
 router.replace({ name: 'Chat', params: { uuid: chatStore.active } })
 
@@ -18,7 +19,8 @@ const { isMobile } = useBasicLayout()
 
 const collapsed = computed(() => appStore.siderCollapsed)
 
-const needPermission = computed(() => !!authStore.session?.auth && !authStore.token)
+// const needPermission1 = computed(() => !!authStore.session?.auth && !authStore.token)
+const needPermission = computed(() => (!!authStore.session?.auth && !authStore.token) || userStore.userInfo.available_num < 0)
 
 const getMobileClass = computed(() => {
   if (isMobile.value)

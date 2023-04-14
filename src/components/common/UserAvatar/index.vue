@@ -26,12 +26,13 @@ const userInfo = computed(() => userStore.userInfo)
       </template>
     </div>
     <div class="flex-1 min-w-0 ml-2">
-        <h6 class="overflow-hidden font-bold text-md text-ellipsis whitespace-nowrap">
-        <!-- {{ userInfo.name ?? 'ChenZhaoYu' }} -->
-        公众号: <br> 
-        prompt工程师
-        </h6>
-        关注不走丢
+      剩余可问 {{ userInfo.available_num }} 个问题<br>
+      加微信：
+      <h6 class="overflow-hidden font-bold text-md text-ellipsis whitespace-nowrap">
+        miaogudong
+      </h6>
+      解除额度限制
+      <!-- {{ userInfo.name ?? 'ChenZhaoYu' }} -->
       <!-- <p class="overflow-hidden text-xs text-gray-500 text-ellipsis whitespace-nowrap">
         <span
           v-if="isString(userInfo.description) && userInfo.description !== ''"

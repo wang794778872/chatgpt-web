@@ -38,9 +38,10 @@ export function fetchChatAPIProcess<T = any>(
 }
 
 export function fetchSession<T>() {
-  return post<T>({
+  const tmp = post<T>({
     url: '/session',
   })
+  return tmp
 }
 
 export function fetchVerify<T>(token: string) {

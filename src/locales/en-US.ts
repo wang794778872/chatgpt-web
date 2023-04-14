@@ -25,7 +25,8 @@ export default {
     success: 'Success',
     failed: 'Failed',
     verify: 'Verify',
-    unauthorizedTips: 'Unauthorized, please verify first.',
+    // unauthorizedTips: 'Unauthorized, please verify first.',
+    unauthorizedTips: 'sorry，您的额度已用完，请联系管理员解除限制【微信号：miaogudong】',
   },
   chat: {
     newChatButton: 'New Chat',

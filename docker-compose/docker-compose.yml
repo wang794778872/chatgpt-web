@@ -12,8 +12,8 @@ services:
       # 二选一
       # OPENAI_ACCESS_TOKEN:
       # API接口地址，可选，设置 OPENAI_API_KEY 时可用
-      # OPENAI_API_BASE_URL: https://api2.aichatcn.fun  #cf转接地址
-      OPENAI_API_BASE_URL: https://api.openai.com
+      OPENAI_API_BASE_URL: https://api2.aichatcn.fun  #cf转接地址
+      # OPENAI_API_BASE_URL: https://api.openai.com
       # API模型，可选，设置 OPENAI_API_KEY 时可用
       OPENAI_API_MODEL: gpt-3.5-turbo
       # # 反向代理，可选
