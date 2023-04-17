@@ -46,7 +46,6 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
 })
 
 router.post('/config', auth, async (req, res) => {
-    global.console.log("config")
   try {
     const response = await chatConfig()
     res.send(response)
@@ -58,7 +57,7 @@ router.post('/config', auth, async (req, res) => {
 
 router.post('/session', async (req, res) => {
   try {
-    global.console.log("session")
+    // global.console.log("session")
     const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY
     const hasAuth = isNotEmptyString(AUTH_SECRET_KEY)
     res.send({ status: 'Success', message: '', data: { auth: hasAuth, model: currentModel() } })
@@ -70,16 +69,17 @@ router.post('/session', async (req, res) => {
 
 router.post('/verify', async (req, res) => {
   try {
-    global.console.log("verify")
+    // global.console.log("verify")
     const { token } = req.body as { token: string }
     if (!token)
       throw new Error('Secret key is empty')
-    const MY_AUTH_SECRET_KEY = 'ironman'
+    const MY_AUTH_SECRET_KEY_LIST: string[] = ['ironman', 'thor', 'hulk', 'captainamerica', 'ai1838']
+    global.console.log(MY_AUTH_SECRET_KEY_LIST.includes(token))
     // if (process.env.AUTH_SECRET_KEY !== token) {
-    if (MY_AUTH_SECRET_KEY !== token)
-      throw new Error('密钥无效 | Secret key is invalid')
-
-    res.send({ status: 'Success', message: 'Verify successfully', data: null })
+    if (MY_AUTH_SECRET_KEY_LIST.includes(token))
+        res.send({ status: 'Success', message: 'Verify successfully', data: null })
+    else
+        throw new Error('密钥无效 | Secret key is invalid')
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
@@ -87,10 +87,11 @@ router.post('/verify', async (req, res) => {
 })
 
 router.post('/user_init', auth, async (req, res) => {
-  global.console.log("user_init")
+    const { id } = req.body as { id: string }
+//   global.console.log("user_init")
   try {
-    const user_id = defaultUserRedis()
-    res.send({ status: 'Success', message: 'user_init successfully', data: { id: user_id } })
+    defaultUserRedis(id)
+    res.send({ status: 'Success', message: 'user_init successfully', data: null})
   }
   catch (error) {
     res.send(error)

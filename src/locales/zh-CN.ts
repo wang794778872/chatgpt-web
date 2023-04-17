@@ -76,6 +76,8 @@ export default {
     siderButton: '提示词商店',
     gpthome: 'chatGPT导航站',
     gpthometip: '更多功能请访问chatGPT导航站',
+    copyShareLink: '分享网站',
+    copyShareLinkTip: '每次分享网站,可获取20条对话额度',
     local: '本地',
     online: '在线',
     title: '标题',

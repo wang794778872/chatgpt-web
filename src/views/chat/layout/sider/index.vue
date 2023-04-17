@@ -55,6 +55,12 @@ watch(
     flush: 'post',
   },
 )
+
+// function copyLink(event: KeyboardEvent) {
+//     const link = 'https://chat.botchat.club/'; // 指定要复制的链接
+//     navigator.clipboard.writeText(link);
+// }
+
 </script>
 
 <template>
@@ -80,14 +86,19 @@ watch(
           <List />
         </div>
         <div class="p-4">
-          <NButton block @click="show = true">
-            {{ $t('store.siderButton') }}
-          </NButton>
-        </div>
-        <div class="p-4">
-        <NButton block>
-            <a href="https://www.aifuturecome.com/" target="_blank">{{ $t('store.gpthome') }}</a>
-        </NButton>
+            <NButton block @click="show = true">
+                {{ $t('store.siderButton') }}
+            </NButton>
+        <!-- </div>
+        <div class="p-4"> -->
+            <NButton block>
+                <a href="https://www.aifuturecome.com/" target="_blank">{{ $t('store.gpthome') }}</a>
+            </NButton>
+        <!-- </div>
+        <div class="p-4"> -->
+            <!-- <NButton block @click="copyLink">
+                {{ $t('store.copyShareLink') }}
+            </NButton> -->
         </div>
       </main>
       <Footer />

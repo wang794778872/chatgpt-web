@@ -30,7 +30,7 @@ export const useAppStore = defineStore('app-store', {
 })
 
 export function useAppStoreWithOut() {
-    console.log("useAppStoreWithOut")
-    console.log(store)
+    // console.log("useAppStoreWithOut")
+    // console.log(store)
   return useAppStore(store)
 }

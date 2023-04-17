@@ -20,7 +20,7 @@ const { isMobile } = useBasicLayout()
 const collapsed = computed(() => appStore.siderCollapsed)
 
 // const needPermission1 = computed(() => !!authStore.session?.auth && !authStore.token)
-const needPermission = computed(() => (!!authStore.session?.auth && !authStore.token) || userStore.userInfo.available_num < 0)
+const needPermission = computed(() => (!!authStore.session?.auth && !authStore.token) || userStore.userInfo?.available_num < 0)
 
 const getMobileClass = computed(() => {
   if (isMobile.value)

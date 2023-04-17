@@ -50,9 +50,10 @@ export function fetchVerify<T>(token: string) {
   })
 }
 
-export function fetchUserInit<T>(token: string) {
+export function fetchUserInit<T>(id: string) {
     return post<T>({
       url: '/user_init',
-      data: { token },
+      data: { id },
     })
-  }
+}
+
