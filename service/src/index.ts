@@ -5,6 +5,8 @@ import { chatConfig, chatReplyProcess, currentModel } from './chatgpt'
 import { auth } from './middleware/auth'
 import { limiter } from './middleware/limiter'
 import { isNotEmptyString } from './utils/is'
+import { defaultUserRedis } from './utils/user_redis'
+
 
 const app = express()
 const router = express.Router()
@@ -44,6 +46,7 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
 })
 
 router.post('/config', auth, async (req, res) => {
+    global.console.log("config")
   try {
     const response = await chatConfig()
     res.send(response)
@@ -55,6 +58,7 @@ router.post('/config', auth, async (req, res) => {
 
 router.post('/session', async (req, res) => {
   try {
+    global.console.log("session")
     const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY
     const hasAuth = isNotEmptyString(AUTH_SECRET_KEY)
     res.send({ status: 'Success', message: '', data: { auth: hasAuth, model: currentModel() } })
@@ -66,6 +70,7 @@ router.post('/session', async (req, res) => {
 
 router.post('/verify', async (req, res) => {
   try {
+    global.console.log("verify")
     const { token } = req.body as { token: string }
     if (!token)
       throw new Error('Secret key is empty')
@@ -78,6 +83,17 @@ router.post('/verify', async (req, res) => {
   }
   catch (error) {
     res.send({ status: 'Fail', message: error.message, data: null })
+  }
+})
+
+router.post('/user_init', auth, async (req, res) => {
+  global.console.log("user_init")
+  try {
+    const user_id = defaultUserRedis()
+    res.send({ status: 'Success', message: 'user_init successfully', data: { id: user_id } })
+  }
+  catch (error) {
+    res.send(error)
   }
 })
 

@@ -74,6 +74,8 @@ export default {
   },
   store: {
     siderButton: '提示詞商店',
+    gpthome: 'chatGPT导航站',
+    gpthometip: '更多功能请访问chatGPT导航站',
     local: '本機',
     online: '線上',
     title: '標題',

@@ -84,6 +84,11 @@ watch(
             {{ $t('store.siderButton') }}
           </NButton>
         </div>
+        <div class="p-4">
+        <NButton block>
+            <a href="https://www.aifuturecome.com/" target="_blank">{{ $t('store.gpthome') }}</a>
+        </NButton>
+        </div>
       </main>
       <Footer />
     </div>

@@ -32,7 +32,7 @@ async function handleVerify() {
     await fetchVerify(secretKey)
     // authStore.setToken(secretKey)
     authStore.setToken(userStore.userInfo.id)
-    userStore.userInfo.available_num = 20 // 密钥验证通过给20条
+    userStore.userInfo.available_num = 999 // 密钥验证通过给20条
     userStore.updateUserInfo({ available_num: userStore.userInfo.available_num })
     ms.success('success')
     window.location.reload()

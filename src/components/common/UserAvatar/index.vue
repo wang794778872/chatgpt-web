@@ -25,20 +25,14 @@ const userInfo = computed(() => userStore.userInfo)
         <NAvatar size="large" round :src="defaultAvatar" />
       </template>
     </div>
-    <div class="flex-1 min-w-0 ml-2">
-      剩余可问 {{ userInfo.available_num }} 个问题<br>
-      加微信：
-      <h6 class="overflow-hidden font-bold text-md text-ellipsis whitespace-nowrap">
-        miaogudong
-      </h6>
-      解除额度限制
-      <!-- {{ userInfo.name ?? 'ChenZhaoYu' }} -->
-      <!-- <p class="overflow-hidden text-xs text-gray-500 text-ellipsis whitespace-nowrap">
-        <span
-          v-if="isString(userInfo.description) && userInfo.description !== ''"
-          v-html="userInfo.description"
-        /> -->
-      <!-- </p> -->
+
+    <div style="display: flex; flex-wrap: wrap;">
+        <div v-if="userInfo.available_num < 999" style="flex-basis: 100%; display: flex; margin-top: 5px;">
+            <span style="flex-basis: 0; flex-grow: 1; min-width: 0;">剩余对话次数： {{ userInfo.available_num }}</span>
+        </div>
+        <div style="flex-basis: 100%; display: flex; margin-top: 5px;">
+            <span style="flex-basis: 0; flex-grow: 1; min-width: 0;font-size: 8px;color: blue;">{{ $t('store.gpthometip') }}</span>
+        </div>
     </div>
   </div>
 </template>

@@ -12,6 +12,7 @@ async function bootstrap() {
 
   setupScrollbarStyle()
 
+console.log("bootstrap")
   setupStore(app)
 
   setupI18n(app)

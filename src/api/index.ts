@@ -38,10 +38,9 @@ export function fetchChatAPIProcess<T = any>(
 }
 
 export function fetchSession<T>() {
-  const tmp = post<T>({
+    return post<T>({
     url: '/session',
   })
-  return tmp
 }
 
 export function fetchVerify<T>(token: string) {
@@ -50,3 +49,10 @@ export function fetchVerify<T>(token: string) {
     data: { token },
   })
 }
+
+export function fetchUserInit<T>(token: string) {
+    return post<T>({
+      url: '/user_init',
+      data: { token },
+    })
+  }

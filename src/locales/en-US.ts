@@ -74,6 +74,8 @@ export default {
   },
   store: {
     siderButton: 'Prompt Store',
+    gpthome: 'chatGPT导航站',
+    gpthometip: '更多功能请访问chatGPT导航站',
     local: 'Local',
     online: 'Online',
     title: 'Title',

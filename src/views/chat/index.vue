@@ -152,7 +152,10 @@ async function onConversation() {
       })
       updateChatSome(+uuid, dataSources.value.length - 1, { loading: false })
     }
-    userStore.userInfo.available_num--
+    if (userStore.userInfo.available_num < 999) {
+        userStore.userInfo.available_num--
+    }
+
     if (userStore.userInfo.available_num < 0) {
     //   console.log('额度用完')
     }
@@ -470,9 +473,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <!-- <div style="position: fixed; width:100%; background-color: #b3ecff; text-align:center;">
-    域名容易被墙，关注公众号：<b>prompt工程师</b>，永久更新chatGPT国内访问网站！
-  </div> -->
+  <div style="position: sticky;top:0;left:0;z-index:9999999; width:100%; background-color: #006400; text-align:center;color: white;">
+    因爬虫攻击，对提问做一定限制，加微信<b>miaogudong</b>，免费解除限制
+  </div>
   <div class="flex flex-col w-full h-full">
     <HeaderComponent
       v-if="isMobile"

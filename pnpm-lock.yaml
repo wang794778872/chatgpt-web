@@ -141,6 +141,9 @@ devDependencies:
   tailwindcss:
     specifier: ^3.3.1
     version: 3.3.1(postcss@8.4.21)(ts-node@10.9.1)
+  tinydb:
+    specifier: ^0.1.0
+    version: 0.1.0
   typescript:
     specifier: ~4.9.5
     version: 4.9.5
@@ -7350,6 +7353,10 @@ packages:
 
   /through@2.3.8:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==}
+    dev: true
+
+  /tinydb@0.1.0:
+    resolution: {integrity: sha512-dMAshk1V/UBW+WZMEkj5s8fdefsS9Os2nn85n7hsKfKYNQ8IdniR8mEcyqb71PuojXOCjZNRmgM+PNGBcJAkOQ==}
     dev: true
 
   /to-fast-properties@2.0.0:
