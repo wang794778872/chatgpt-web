@@ -64,12 +64,6 @@ dependencies:
   safe-buffer:
     specifier: ^5.2.1
     version: 5.2.1
-  sqlite:
-    specifier: ^4.1.2
-    version: 4.1.2
-  sqlite3:
-    specifier: ^5.1.6
-    version: 5.1.6
   vue:
     specifier: ^3.2.47
     version: 3.2.47
@@ -7523,28 +7517,6 @@ packages:
     dependencies:
       readable-stream: 3.6.1
     dev: true
-
-  /sqlite3@5.1.6:
-    resolution: {integrity: sha512-olYkWoKFVNSSSQNvxVUfjiVbz3YtBwTJj+mfV5zpHmqW3sELx2Cf4QCdirMelhM5Zh+KDVaKgQHqCxrqiWHybw==}
-    requiresBuild: true
-    peerDependenciesMeta:
-      node-gyp:
-        optional: true
-    dependencies:
-      '@mapbox/node-pre-gyp': 1.0.10
-      node-addon-api: 4.3.0
-      tar: 6.1.13
-    optionalDependencies:
-      node-gyp: 8.4.1
-    transitivePeerDependencies:
-      - bluebird
-      - encoding
-      - supports-color
-    dev: false
-
-  /sqlite@4.1.2:
-    resolution: {integrity: sha512-FlBG51gHbux5vPjwnoqFEghNGvnTMTbHyiI09U3qFTQs9AtWuwd4i++6+WCusCXKrVdIDLzfdGekrolr3m4U4A==}
-    dev: false
 
   /ssri@8.0.1:
     resolution: {integrity: sha512-97qShzy1AiyxvPNIkLWoGua7xoQzzPjQ0HAH4B0rWKo7SZ6USuPcrUiAFrws0UH8RrbWmgq3LMTObhPIHbbBeQ==}

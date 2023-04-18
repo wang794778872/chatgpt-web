@@ -1,5 +1,10 @@
 import loki from 'lokijs'
+import fs from 'fs'
+// import LokiMemoryAdapter from 'lokijs/src/loki-memory-adapter'
 
+
+// 创建新的内存适配器
+// const adapter = new LokiMemoryAdapter()
 const MY_COLLENTION = 'users'
 
 interface sUserInfo {
@@ -9,19 +14,28 @@ interface sUserInfo {
 }
 
 // 创建数据库实例
-const db = new loki ('./users.db')
+let db: any
 let users: any
 
 function loadUserDB(): any {
-  db.loadDatabase()
-  users = db.getCollection(MY_COLLENTION)
-  global.console.log("getCollection", users)
-  if (!users) {
-    global.console.log('Collection does not exist!')
-    users = db.addCollection('users')
-  } else {
-    global.console.log('Collection loaded successfully!')
-  }
+    if (fs.existsSync('./users.db')) {
+        global.console.log("existsSync")
+        global.console.log(fs.accessSync('./users.db', fs.constants.R_OK))
+      } else {
+        global.console.log("existsSync failed")
+      }
+  db = new loki ('./users.db')
+//   db = new loki ('./users.db', { adapter, autoload: true, autosave: true })
+  users = db.addCollection(MY_COLLENTION)
+//   db.loadDatabase({ autoload: true, autosave: true, recursiveWait: true })
+//   users = db.getCollection(MY_COLLENTION)
+//   global.console.log("getCollection", users)
+//   if (!users) {
+//     global.console.log('Collection does not exist!')
+//     users = db.addCollection('users')
+//   } else {
+//     global.console.log('Collection loaded successfully!')
+//   }
   return users
 }
 

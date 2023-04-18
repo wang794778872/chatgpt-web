@@ -5,7 +5,7 @@ export default defineConfig({
   outDir: 'build',
   target: 'es2020',
   format: ['esm'],
-  external: ['lokijs'],
+//   external: ['lokijs'],
   splitting: false,
   sourcemap: true,
   minify: false,

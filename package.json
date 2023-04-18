@@ -31,7 +31,6 @@
     "html2canvas": "^1.4.1",
     "ioredis": "^5.3.1",
     "katex": "^0.16.4",
-    "lokijs": "^1.5.12",
     "markdown-it": "^13.0.1",
     "mongodb": "^5.2.0",
     "mongoose": "^7.0.3",
@@ -44,8 +43,6 @@
     "pouchdb-utils": "^8.0.1",
     "redis-js": "^0.1.2",
     "safe-buffer": "^5.2.1",
-    "sqlite": "^4.1.2",
-    "sqlite3": "^5.1.6",
     "vue": "^3.2.47",
     "vue-i18n": "^9.2.2",
     "vue-router": "^4.1.6"
