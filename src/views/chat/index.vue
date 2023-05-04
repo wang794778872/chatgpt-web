@@ -34,7 +34,7 @@ const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
 const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom } = useScroll()
 const { usingContext, toggleUsingContext } = useUsingContext()
 
-const wxQRCodeUrl = ref('https://i.328888.xyz/2023/04/27/i9wNO8.png')
+const wxQRCodeUrl = ref('https://s1.locimg.com/2023/05/04/5825fc6f9b82b.png')
 
 const { uuid } = route.params as { uuid: string }
 const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
@@ -46,9 +46,8 @@ const showDataSources = computed(() => {
     if (userStore.userInfo.is_login == false) {  
         const prologue_text= `您好!
         游客用户可免费试用10条对话体验
-        左下角点击获取专属链接，每次邀请好友试用，可免费获得20条对话额度
-        更多功能体验，请注册并登陆会员
-        扫描下面二维码添加好友，获得会员专属激活码
+        如果您有更多使用的需要，请注册并登陆会员扫描下面二维码添加好友，获得会员专属激活码。
+        期待与您更多交流，探索更多应用可能。
         ![alt text](${wxQRCodeUrl.value})`
 
         //添加开场白

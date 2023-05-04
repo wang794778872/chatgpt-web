@@ -96,9 +96,9 @@ watch(
             <NButton block @click="show = true">
                 {{ $t('store.siderButton') }}
             </NButton>
-            <NButton block>
+            <!-- <NButton block>
                 <a href="https://www.aifuturecome.com/" target="_blank">{{ $t('store.gpthome') }}</a>
-            </NButton>
+            </NButton> -->
             <NButton v-if='isLogin'  block @click="showPerson = true">
                 {{ $t('store.personalCenter') }}
             </NButton>
