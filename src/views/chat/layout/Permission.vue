@@ -5,6 +5,10 @@ import { fetchVerify } from '@/api'
 import { useAuthStore, useUserStore } from '@/store'
 import Icon403 from '@/icons/403.vue'
 
+interface SessionResponse {
+  secret_num: number
+}
+
 interface Props {
   visible: boolean
 }
@@ -29,13 +33,22 @@ async function handleVerify() {
 
   try {
     loading.value = true
-    await fetchVerify(secretKey)
+    const { data } = await fetchVerify<SessionResponse>(secretKey)
     // authStore.setToken(secretKey)
-    authStore.setToken(userStore.userInfo.id)
-    userStore.userInfo.available_num = 999 // 密钥验证通过给20条
-    userStore.updateUserInfo({ available_num: userStore.userInfo.available_num })
-    ms.success('success')
-    window.location.reload()
+    // console.log(data)
+    if (data.secret_num > 0)
+    {
+        authStore.setToken(userStore.userInfo.id)
+        if (userStore.userInfo.available_num < 0)
+            userStore.userInfo.available_num = data.secret_num
+        else
+            userStore.userInfo.available_num += data.secret_num // 密钥验证通过给20条
+        userStore.updateUserInfo({ available_num: userStore.userInfo.available_num })
+        ms.success('success')
+        window.location.reload()
+    }
+    else
+        throw new Error('密钥无效 | Secret key is invalid')
   }
   catch (error: any) {
     ms.error(error.message ?? 'error')

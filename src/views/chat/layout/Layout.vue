@@ -3,14 +3,16 @@ import { computed } from 'vue'
 import { NLayout, NLayoutContent } from 'naive-ui'
 import { useRouter } from 'vue-router'
 import Sider from './sider/index.vue'
-import Permission from './Permission.vue'
+import UserLogin from './UserLogin.vue'
+// import Permission from './Permission.vue'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { useAppStore, useAuthStore, useChatStore, useUserStore } from '@/store'
+// import { useAppStore, useAuthStore, useChatStore, useUserStore } from '@/store'
+import { useAppStore, useChatStore, useUserStore } from '@/store'
 
 const router = useRouter()
 const appStore = useAppStore()
 const chatStore = useChatStore()
-const authStore = useAuthStore()
+// const authStore = useAuthStore()
 const userStore = useUserStore()
 
 router.replace({ name: 'Chat', params: { uuid: chatStore.active } })
@@ -20,7 +22,8 @@ const { isMobile } = useBasicLayout()
 const collapsed = computed(() => appStore.siderCollapsed)
 
 // const needPermission1 = computed(() => !!authStore.session?.auth && !authStore.token)
-const needPermission = computed(() => (!!authStore.session?.auth && !authStore.token) || userStore.userInfo?.available_num < 0)
+// const needPermission = computed(() => (!!authStore.session?.auth && !authStore.token) || (userStore.userInfo.is_login == false && userStore.userInfo?.available_num < 0))
+const needLogin = computed(() => (userStore.userInfo.is_login == false && !userStore.userInfo.id))
 
 const getMobileClass = computed(() => {
   if (isMobile.value)
@@ -48,6 +51,7 @@ const getContainerClass = computed(() => {
         </NLayoutContent>
       </NLayout>
     </div>
-    <Permission :visible="needPermission" />
+    <!-- <Permission :visible="needPermission" /> -->
+    <UserLogin :visible="needLogin" />
   </div>
 </template>

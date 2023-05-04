@@ -34,9 +34,42 @@ const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
 const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom } = useScroll()
 const { usingContext, toggleUsingContext } = useUsingContext()
 
+const wxQRCodeUrl = ref('https://i.328888.xyz/2023/04/27/i9wNO8.png')
+
 const { uuid } = route.params as { uuid: string }
 const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
 const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !item.error)))
+
+//对话显示内容再封装，未登陆会员显示温馨提示
+const showDataSources = computed(() => {
+    if (userStore.userInfo.is_login == false) {  
+        const prologue_text= `您好!
+        游客用户可免费试用10条对话体验
+        左下角点击获取专属链接，每次邀请好友试用，可免费获得20条对话额度
+        更多功能体验，请注册并登陆会员
+        扫描下面二维码添加好友，获得会员专属激活码
+        ![alt text](${wxQRCodeUrl.value})`
+
+        //添加开场白
+        const prologue={
+            dateTime: new Date().toLocaleString(),
+            text: prologue_text,
+            inversion: false,
+            error: true,
+            loading: false,
+            conversationOptions:  null,
+		    requestOptions: { prompt: null, options: null },
+        }
+        let tmpDataSources = dataSources.value.slice()
+        tmpDataSources.unshift(prologue)
+        console.log(tmpDataSources)
+        return tmpDataSources
+    }
+    else {
+        return dataSources.value
+    }
+})
+
 
 const prompt = ref<string>('')
 const loading = ref<boolean>(false)
@@ -142,26 +175,27 @@ async function onConversation() {
               message = ''
               return fetchChatAPIOnce()
             }
-
             scrollToBottomIfAtBottom()
           }
           catch (error) {
+            // console.log(error)
             //
           }
         },
       })
       updateChatSome(+uuid, dataSources.value.length - 1, { loading: false })
     }
-    if (userStore.userInfo.available_num < 999) {
+    if (userStore.userInfo.is_login == false) {  
         userStore.userInfo.available_num--
     }
 
-    if (userStore.userInfo.available_num < 0) {
+    if (userStore.userInfo.is_login == false && userStore.userInfo.available_num < 0) {
     //   console.log('额度用完')
     }
     else {
       await fetchChatAPIOnce()
-      userStore.updateUserInfo({ available_num: userStore.userInfo.available_num })
+      if (userStore.userInfo.is_login == false)
+        userStore.updateUserInfo({ available_num: userStore.userInfo.available_num, is_new: false })
     }
   }
   catch (error: any) {
@@ -177,7 +211,8 @@ async function onConversation() {
       scrollToBottomIfAtBottom()
       return
     }
-    userStore.updateUserInfo({ available_num: userStore.userInfo.available_num })
+    if (userStore.userInfo.is_login == false)
+        userStore.updateUserInfo({ available_num: userStore.userInfo.available_num })
     const currentChat = getChatByUuidAndIndex(+uuid, dataSources.value.length - 1)
 
     if (currentChat?.text && currentChat.text !== '') {
@@ -473,9 +508,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div style="position: sticky;top:0;left:0;z-index:9999999; width:100%; background-color: #006400; text-align:center;color: white;">
-    因爬虫攻击，对提问做一定限制，加微信<b>miaogudong</b>，免费解除限制
-  </div>
+  <!-- <div v-if="!userStore.userInfo.is_login" style="position: sticky;top:0;left:0;z-index:1001; width:100%; background-color: #006400; text-align:center;color: white;">
+    因爬虫攻击，对提问做一定限制，分享好友使用立即增加额度，或加微信miaogudong，免费解除限制
+  </div> -->
   <div class="flex flex-col w-full h-full">
     <HeaderComponent
       v-if="isMobile"
@@ -491,7 +526,7 @@ onUnmounted(() => {
           class="w-full max-w-screen-xl m-auto dark:bg-[#101014]"
           :class="[isMobile ? 'p-2' : 'p-4']"
         >
-          <template v-if="!dataSources.length">
+          <template v-if="!showDataSources.length">
             <div class="flex items-center justify-center mt-4 text-center text-neutral-300">
               <SvgIcon icon="ri:bubble-chart-fill" class="mr-2 text-3xl" />
               <span>Aha~</span>
@@ -500,7 +535,7 @@ onUnmounted(() => {
           <template v-else>
             <div>
               <Message
-                v-for="(item, index) of dataSources"
+                v-for="(item, index) of showDataSources"
                 :key="index"
                 :date-time="item.dateTime"
                 :text="item.text"

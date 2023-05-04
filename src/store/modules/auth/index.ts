@@ -6,6 +6,7 @@ import { fetchSession } from '@/api'
 interface SessionResponse {
   auth: boolean
   model: 'ChatGPTAPI' | 'ChatGPTUnofficialProxyAPI'
+  ext_available_num: number
 }
 
 export interface AuthState {
@@ -26,9 +27,9 @@ export const useAuthStore = defineStore('auth-store', {
   },
 
   actions: {
-    async getSession() {
+    async getSession(id: string) {
       try {
-        const { data } = await fetchSession<SessionResponse>()
+        const { data } = await fetchSession<SessionResponse>(id)
         this.session = { ...data }
         return Promise.resolve(data)
       }

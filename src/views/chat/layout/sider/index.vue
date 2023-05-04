@@ -5,15 +5,23 @@ import { NButton, NLayoutSider } from 'naive-ui'
 import List from './List.vue'
 import Footer from './Footer.vue'
 import { useAppStore, useChatStore } from '@/store'
+// import { useAppStore, useChatStore, useUserStore } from '@/store'
+import { useUserStore } from '@/store'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { PromptStore } from '@/components/common'
+import PersonalCenter from '../PersonalCenter/index.vue'
+// import Swal  from 'sweetalert2'
+// import { copyText } from '@/utils/format'
 
 const appStore = useAppStore()
 const chatStore = useChatStore()
 
 const { isMobile } = useBasicLayout()
 const show = ref(false)
+const showPerson = ref(false)
 
+const userStore = useUserStore()
+const isLogin = computed(() => Boolean(userStore.userInfo.is_login))
 const collapsed = computed(() => appStore.siderCollapsed)
 
 function handleAdd() {
@@ -56,13 +64,12 @@ watch(
   },
 )
 
-// function copyLink(event: KeyboardEvent) {
-//     const link = 'https://chat.botchat.club/'; // 指定要复制的链接
-//     navigator.clipboard.writeText(link);
-// }
+// const userStore = useUserStore()
+
+
+
 
 </script>
-
 <template>
   <NLayoutSider
     :collapsed="collapsed"
@@ -89,10 +96,14 @@ watch(
             <NButton block @click="show = true">
                 {{ $t('store.siderButton') }}
             </NButton>
-        <!-- </div>
-        <div class="p-4"> -->
             <NButton block>
                 <a href="https://www.aifuturecome.com/" target="_blank">{{ $t('store.gpthome') }}</a>
+            </NButton>
+            <NButton v-if='isLogin'  block @click="showPerson = true">
+                {{ $t('store.personalCenter') }}
+            </NButton>
+            <NButton v-else  block @click="showPerson = true">
+                {{ $t('store.personalLogin') }}
             </NButton>
         <!-- </div>
         <div class="p-4"> -->
@@ -108,4 +119,6 @@ watch(
     <div v-show="!collapsed" class="fixed inset-0 z-40 bg-black/40" @click="handleUpdateCollapsed" />
   </template>
   <PromptStore v-model:visible="show" />
+  <PersonalCenter v-model:visible="showPerson" />
 </template>
+

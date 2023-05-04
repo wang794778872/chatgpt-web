@@ -2,13 +2,14 @@ version: '3'
 
 services:
   app:
-    container_name: chatgpt-web
-    image: wan794778872/chatgpt-web:1.7 # 总是使用latest,更新时重新pull该tag镜像即可
+    image: wan794778872/chatgpt-web:1.9 # 总是使用 latest ,更新时重新 pull 该 tag 镜像即可
     ports:
       - 3002:3002
+    volumes:
+      - ./tmp:/tmp
     environment:
       # 二选一
-      OPENAI_API_KEY: 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
+      OPENAI_API_KEY: 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
       # 二选一
       # OPENAI_ACCESS_TOKEN:
       # API接口地址，可选，设置 OPENAI_API_KEY 时可用

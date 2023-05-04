@@ -2,17 +2,20 @@
 // import { computed, ref } from 'vue'
 import { computed } from 'vue'
 // import { NButton, NInput, NPopconfirm, NSelect, useMessage } from 'naive-ui'
-import { NButton, NPopconfirm, NSelect, useMessage } from 'naive-ui'
-import type { Language, Theme } from '@/store/modules/app/helper'
+// import { NButton, NPopconfirm, NSelect, useMessage } from 'naive-ui'
+import { NButton, NPopconfirm, useMessage } from 'naive-ui'
+import type { Theme } from '@/store/modules/app/helper'
+// import type { Language, Theme } from '@/store/modules/app/helper'
 import { SvgIcon } from '@/components/common'
-import { useAppStore, useUserStore } from '@/store'
+// import { useAppStore, useUserStore } from '@/store'
+import { useAppStore } from '@/store'
 // import type { UserInfo } from '@/store/modules/user/helper'
 import { getCurrentDate } from '@/utils/functions'
 import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { t } from '@/locales'
 
 const appStore = useAppStore()
-const userStore = useUserStore()
+// const userStore = useUserStore()
 
 const { isMobile } = useBasicLayout()
 
@@ -28,14 +31,14 @@ const theme = computed(() => appStore.theme)
 
 // const description = ref(userInfo.value.description ?? '')
 
-const language = computed({
-  get() {
-    return appStore.language
-  },
-  set(value: Language) {
-    appStore.setLanguage(value)
-  },
-})
+// const language = computed({
+//   get() {
+//     return appStore.language
+//   },
+//   set(value: Language) {
+//     appStore.setLanguage(value)
+//   },
+// })
 
 const themeOptions: { label: string; key: Theme; icon: string }[] = [
   {
@@ -55,22 +58,22 @@ const themeOptions: { label: string; key: Theme; icon: string }[] = [
   },
 ]
 
-const languageOptions: { label: string; key: Language; value: Language }[] = [
-  { label: '简体中文', key: 'zh-CN', value: 'zh-CN' },
-  { label: '繁體中文', key: 'zh-TW', value: 'zh-TW' },
-  { label: 'English', key: 'en-US', value: 'en-US' },
-]
+// const languageOptions: { label: string; key: Language; value: Language }[] = [
+//   { label: '简体中文', key: 'zh-CN', value: 'zh-CN' },
+//   { label: '繁體中文', key: 'zh-TW', value: 'zh-TW' },
+//   { label: 'English', key: 'en-US', value: 'en-US' },
+// ]
 
 // function updateUserInfo(options: Partial<UserInfo>) {
 //   userStore.updateUserInfo(options)
 //   ms.success(t('common.success'))
 // }
 
-function handleReset() {
-  userStore.resetUserInfo()
-  ms.success(t('common.success'))
-  window.location.reload()
-}
+// function handleReset() {
+//   userStore.resetUserInfo()
+//   ms.success(t('common.success'))
+//   window.location.reload()
+// }
 
 function exportData(): void {
   const date = getCurrentDate()
@@ -203,7 +206,7 @@ function handleImportButtonClick(): void {
           </template>
         </div>
       </div>
-      <div class="flex items-center space-x-4">
+      <!-- <div class="flex items-center space-x-4">
         <span class="flex-shrink-0 w-[100px]">{{ $t('setting.language') }}</span>
         <div class="flex flex-wrap items-center gap-4">
           <NSelect
@@ -213,13 +216,13 @@ function handleImportButtonClick(): void {
             @update-value="value => appStore.setLanguage(value)"
           />
         </div>
-      </div>
-      <div class="flex items-center space-x-4">
+      </div> -->
+      <!-- <div class="flex items-center space-x-4">
         <span class="flex-shrink-0 w-[100px]">{{ $t('setting.resetUserInfo') }}</span>
         <NButton size="small" @click="handleReset">
           {{ $t('common.reset') }}
         </NButton>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>

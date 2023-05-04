@@ -9,13 +9,15 @@ import { sendResponse } from '../utils'
 import { isNotEmptyString } from '../utils/is'
 import type { ApiModel, ChatContext, ChatGPTUnofficialProxyAPIOptions, ModelConfig } from '../types'
 import type { BalanceResponse, RequestOptions } from './types'
+import { get_openai_apikey } from 'src/database/apikey_db'
 
 const { HttpsProxyAgent } = httpsProxyAgent
 
 dotenv.config()
 
 const ErrorCodeMessage: Record<string, string> = {
-  401: '[OpenAI] 提供错误的API密钥 | Incorrect API key provided',
+//   401: '[OpenAI] 提供错误的API密钥 | Incorrect API key provided',
+  401: '[OpenAI] 开了个小差，请重试',
   403: '[OpenAI] 服务器拒绝访问，请稍后再试 | Server refused to access, please try again later',
   502: '[OpenAI] 错误的网关 |  Bad Gateway',
   503: '[OpenAI] 服务器繁忙，请稍后再试 | Server is busy, please try again later',
@@ -33,65 +35,119 @@ if (!isNotEmptyString(process.env.OPENAI_API_KEY) && !isNotEmptyString(process.e
 
 let api: ChatGPTAPI | ChatGPTUnofficialProxyAPI
 
-(async () => {
-  // More Info: https://github.com/transitive-bullshit/chatgpt-api
-
-  if (isNotEmptyString(process.env.OPENAI_API_KEY)) {
-    const OPENAI_API_BASE_URL = process.env.OPENAI_API_BASE_URL
-    const OPENAI_API_MODEL = process.env.OPENAI_API_MODEL
-    const model = isNotEmptyString(OPENAI_API_MODEL) ? OPENAI_API_MODEL : 'gpt-3.5-turbo'
-
-    const options: ChatGPTAPIOptions = {
-      apiKey: process.env.OPENAI_API_KEY,
-      completionParams: { model },
-      debug: !disableDebug,
+async function initGPTAPI() {
+    if (isNotEmptyString(process.env.OPENAI_API_KEY)) {
+        const OPENAI_API_BASE_URL = process.env.OPENAI_API_BASE_URL
+        const OPENAI_API_MODEL = process.env.OPENAI_API_MODEL
+        const model = isNotEmptyString(OPENAI_API_MODEL) ? OPENAI_API_MODEL : 'gpt-3.5-turbo'
+    
+        const options: ChatGPTAPIOptions = {
+        apiKey: process.env.OPENAI_API_KEY,
+        completionParams: { model },
+        debug: !disableDebug,
+        }
+    
+        // increase max token limit if use gpt-4
+        if (model.toLowerCase().includes('gpt-4')) {
+        // if use 32k model
+        if (model.toLowerCase().includes('32k')) {
+            options.maxModelTokens = 32768
+            options.maxResponseTokens = 8192
+        }
+        else {
+            options.maxModelTokens = 8192
+            options.maxResponseTokens = 2048
+        }
+        }
+        else{       //默认tokens限制
+            options.maxModelTokens = 4096
+            options.maxResponseTokens = 2048
+        }
+    
+        if (isNotEmptyString(OPENAI_API_BASE_URL))
+        options.apiBaseUrl = `${OPENAI_API_BASE_URL}/v1`
+    
+        setupProxy(options)
+    
+        api = new ChatGPTAPI({ ...options })
+        apiModel = 'ChatGPTAPI'
     }
+}
 
-    // increase max token limit if use gpt-4
-    if (model.toLowerCase().includes('gpt-4')) {
-      // if use 32k model
-      if (model.toLowerCase().includes('32k')) {
-        options.maxModelTokens = 32768
-        options.maxResponseTokens = 8192
-      }
-      else {
-        options.maxModelTokens = 8192
-        options.maxResponseTokens = 2048
-      }
-    }
-
-    if (isNotEmptyString(OPENAI_API_BASE_URL))
-      options.apiBaseUrl = `${OPENAI_API_BASE_URL}/v1`
-
-    setupProxy(options)
-
-    api = new ChatGPTAPI({ ...options })
-    apiModel = 'ChatGPTAPI'
-  }
-  else {
+async function initGPTToken() {
     const OPENAI_API_MODEL = process.env.OPENAI_API_MODEL
     const options: ChatGPTUnofficialProxyAPIOptions = {
-      accessToken: process.env.OPENAI_ACCESS_TOKEN,
-      debug: !disableDebug,
+    accessToken: process.env.OPENAI_ACCESS_TOKEN,
+    debug: !disableDebug,
     }
 
     if (isNotEmptyString(OPENAI_API_MODEL))
-      options.model = OPENAI_API_MODEL
+    options.model = OPENAI_API_MODEL
 
     options.apiReverseProxyUrl = isNotEmptyString(process.env.API_REVERSE_PROXY)
-      ? process.env.API_REVERSE_PROXY
-      : 'https://bypass.churchless.tech/api/conversation'
+    ? process.env.API_REVERSE_PROXY
+    : 'https://bypass.churchless.tech/api/conversation'
 
     setupProxy(options)
-
     api = new ChatGPTUnofficialProxyAPI({ ...options })
     apiModel = 'ChatGPTUnofficialProxyAPI'
-  }
+}
+
+async function initGPTAPIEx(apikey: string, model:string) {
+    if (isNotEmptyString(apikey)) {
+        const OPENAI_API_BASE_URL = process.env.OPENAI_API_BASE_URL
+        const options: ChatGPTAPIOptions = {
+        apiKey: apikey,
+        completionParams: { model },
+        debug: !disableDebug,
+        }
+    
+        // increase max token limit if use gpt-4
+        if (model.toLowerCase().includes('gpt-4')) {
+        // if use 32k model
+        if (model.toLowerCase().includes('32k')) {
+            options.maxModelTokens = 32768
+            options.maxResponseTokens = 8192
+        }
+        else {
+            options.maxModelTokens = 8192
+            options.maxResponseTokens = 2048
+        }
+        }
+        else{       //默认tokens限制
+            options.maxModelTokens = 4096
+            options.maxResponseTokens = 2048
+        }
+    
+        if (isNotEmptyString(OPENAI_API_BASE_URL))
+        options.apiBaseUrl = `${OPENAI_API_BASE_URL}/v1`
+    
+        setupProxy(options)
+    
+        api = new ChatGPTAPI({ ...options })
+        apiModel = 'ChatGPTAPI'
+    }
+}
+
+
+(async () => {
+  // More Info: https://github.com/transitive-bullshit/chatgpt-api
+
+    if (isNotEmptyString(process.env.OPENAI_API_KEY)) {
+        await initGPTAPI()
+    }
+    else {
+        await initGPTToken()
+    }
 })()
 
 async function chatReplyProcess(options: RequestOptions) {
   const { message, lastContext, process, systemMessage } = options
   try {
+    const get_apikey = await get_openai_apikey(false)
+    if (get_apikey && get_apikey != api.apiKey) {
+        api.apiKey=get_apikey
+    }
     let options: SendMessageOptions = { timeoutMs }
     if (apiModel === 'ChatGPTAPI') {
       if (isNotEmptyString(systemMessage))
@@ -106,6 +162,7 @@ async function chatReplyProcess(options: RequestOptions) {
         options = { ...lastContext }
     }
 
+    global.console.log("api.apiKey", api.apiKey)
     const response = await api.sendMessage(message, {
       ...options,
       onProgress: (partialResponse) => {
@@ -117,6 +174,11 @@ async function chatReplyProcess(options: RequestOptions) {
   }
   catch (error: any) {
     const code = error.statusCode
+    if ('401' == code){
+        console.log("apiKey error", api.apiKey)
+        const change_apikey= await get_openai_apikey(true)
+        api.apiKey=change_apikey
+    }
     if (Reflect.has(ErrorCodeMessage, code))
       return sendResponse({ type: 'Fail', message: ErrorCodeMessage[code] })
     return sendResponse({ type: 'Fail', message: error.message ?? 'Please check the back-end console' })
