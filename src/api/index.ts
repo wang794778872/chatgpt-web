@@ -23,18 +23,19 @@ export function fetchChatConfig<T = any>() {
 //chatgpt消息发送协议
 export function fetchChatAPIProcess<T = any>(
   params: {
+    model:string
     prompt: string
     options?: { conversationId?: string; parentMessageId?: string }
     signal?: GenericAbortSignal
-    onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void },
+    onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void }
 ) {
   const settingStore = useSettingStore()
   const userStore = useUserStore()
-  console.log(params.options)
+  console.log(params.model)
   const member_id=userStore.userInfo.is_login?userStore.userInfo.member_id:null
   return post<T>({
     url: '/chat-process',
-    data: { prompt: params.prompt, options: params.options, systemMessage: settingStore.systemMessage, username: member_id },
+    data: { prompt: params.prompt, options: params.options, systemMessage: settingStore.systemMessage, username: member_id, model: params.model},
     signal: params.signal,
     onDownloadProgress: params.onDownloadProgress,
   })
@@ -42,8 +43,7 @@ export function fetchChatAPIProcess<T = any>(
 
 
 export function fetchSession<T>(id: string) {
-    console.log("fetchSession")
-    console.log("id")
+    // console.log("fetchSession")
     return post<T>({
     url: '/session',
     data: { id },

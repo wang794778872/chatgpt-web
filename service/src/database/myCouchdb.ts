@@ -1,11 +1,17 @@
+import * as dotenv from 'dotenv'
 import nano from 'nano'
-
+dotenv.config()
+const db_prefix=process.env.DB_PREFIX 
 // 连接到 CouchDB 服务器
 const db_nano = nano('http://zlwl:zlwl1234@124.222.244.98:5984')
 
-global.console.log("db_nano")
+global.console.log(db_prefix)
 function createDB(db_name: string, monitor?: boolean) {
-    const newDb = db_nano.use(db_name)
+    let newDb: any
+    if (db_prefix)
+        newDb = db_nano.use(`${db_prefix}-${db_name}`)
+    else
+        newDb = db_nano.use(db_name)
     if (monitor)
     {
         newDb.changes({since: 'now', include_docs: true}, (err: Error, body: any) => {
@@ -16,7 +22,7 @@ function createDB(db_name: string, monitor?: boolean) {
             }
         });
     }
-    global.console.log('--------------------------------', db_name)
+    global.console.log('--------------------------------', `${db_prefix}-${db_name}`)
     return newDb
 }
 

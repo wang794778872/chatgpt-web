@@ -19,11 +19,22 @@ export const useChatStore = defineStore('chat-store', {
             console.log(state.chat.find(item => item.uuid === uuid)?.data ?? [])
             return state.chat.find(item => item.uuid === uuid)?.data ?? []
         }
-        console.log(state.chat.find(item => item.uuid === state.active)?.data ?? [])
+        // console.log(state.chat.find(item => item.uuid === state.active)?.data ?? [])
 
         return state.chat.find(item => item.uuid === state.active)?.data ?? []
       }
     },
+
+    getModelByUuid(state: Chat.ChatState) {
+        return (uuid?: number) => {
+        if (uuid) {
+            return state.chat.find(item => item.uuid === uuid)?.modle ?? 'gpt-3.5-turbo'
+        }
+
+        return state.chat.find(item => item.uuid === state.active)?.modle ?? 'gpt-3.5-turbo'
+        }
+    },
+
   },
 
   actions: {

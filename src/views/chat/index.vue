@@ -38,6 +38,7 @@ const wxQRCodeUrl = ref('https://i.328888.xyz/2023/04/27/i9wNO8.png')
 
 const { uuid } = route.params as { uuid: string }
 const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
+const uuidModel = computed(() => chatStore.getModelByUuid(+uuid))
 const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !item.error)))
 
 //对话显示内容再封装，未登陆会员显示温馨提示
@@ -137,11 +138,12 @@ async function onConversation() {
     },
   )
   scrollToBottom()
-
+    console.log("uuidModel", uuidModel.value)
   try {
     let lastText = ''
     const fetchChatAPIOnce = async () => {
       await fetchChatAPIProcess<Chat.ConversationResponse>({
+        model: uuidModel.value,
         prompt: message,
         options,
         signal: controller.signal,
@@ -282,6 +284,7 @@ async function onRegenerate(index: number) {
     let lastText = ''
     const fetchChatAPIOnce = async () => {
       await fetchChatAPIProcess<Chat.ConversationResponse>({
+        model: uuidModel.value,
         prompt: message,
         options,
         signal: controller.signal,

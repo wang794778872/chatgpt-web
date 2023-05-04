@@ -35,6 +35,7 @@ if (!isNotEmptyString(process.env.OPENAI_API_KEY) && !isNotEmptyString(process.e
 
 let api: ChatGPTAPI | ChatGPTUnofficialProxyAPI
 
+
 async function initGPTAPI() {
     if (isNotEmptyString(process.env.OPENAI_API_KEY)) {
         const OPENAI_API_BASE_URL = process.env.OPENAI_API_BASE_URL
@@ -124,8 +125,9 @@ async function initGPTAPIEx(apikey: string, model:string) {
     
         setupProxy(options)
     
-        api = new ChatGPTAPI({ ...options })
+        const apiEx = new ChatGPTAPI({ ...options })
         apiModel = 'ChatGPTAPI'
+        return apiEx
     }
 }
 
@@ -184,6 +186,53 @@ async function chatReplyProcess(options: RequestOptions) {
     return sendResponse({ type: 'Fail', message: error.message ?? 'Please check the back-end console' })
   }
 }
+
+async function chatReplyProcessEx(model: string, options: RequestOptions) {
+    global.console.log("chatReplyProcessEx", model)
+    if (!model){
+        model='gpt-3.5-turbo'
+    }
+    const { message, lastContext, process, systemMessage } = options
+    try {
+        const get_apikey = await get_openai_apikey(false)
+        const apiEx= await initGPTAPIEx(get_apikey, model)
+        if (!apiEx)
+            return sendResponse({ type: 'Fail', message: "api error" })
+        let options: SendMessageOptions = { timeoutMs }
+        if (apiModel === 'ChatGPTAPI') {
+        if (isNotEmptyString(systemMessage))
+            options.systemMessage = systemMessage
+        }
+
+        if (lastContext != null) {
+        if (apiModel === 'ChatGPTAPI')
+
+            options.parentMessageId = lastContext.parentMessageId
+        else
+            options = { ...lastContext }
+        }
+
+        const response = await apiEx.sendMessage(message, {
+        ...options,
+        onProgress: (partialResponse) => {
+            process?.(partialResponse)
+        },
+        })
+
+        return sendResponse({ type: 'Success', data: response })
+    }
+    catch (error: any) {
+        const code = error.statusCode
+        if ('401' == code){
+            const change_apikey= await get_openai_apikey(true)
+            apiEx.apiKey=change_apikey
+        }
+        if (Reflect.has(ErrorCodeMessage, code))
+        return sendResponse({ type: 'Fail', message: ErrorCodeMessage[code] })
+        return sendResponse({ type: 'Fail', message: error.message ?? 'Please check the back-end console' })
+    }
+}
+
 
 async function fetchBalance() {
   // 计算起始日期和结束日期
@@ -274,4 +323,4 @@ function currentModel(): ApiModel {
 
 export type { ChatContext, ChatMessage }
 
-export { chatReplyProcess, chatConfig, currentModel }
+export { chatReplyProcess, chatConfig, currentModel, chatReplyProcessEx }

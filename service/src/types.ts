@@ -7,6 +7,14 @@ export interface RequestProps {
   username?:string
 }
 
+export interface RequestPropsEx {
+    prompt: string
+    options?: ChatContext
+    systemMessage: string
+    username?:string
+    model:string
+}
+
 export interface ChatContext {
   conversationId?: string
   parentMessageId?: string

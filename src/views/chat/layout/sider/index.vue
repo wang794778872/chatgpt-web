@@ -25,7 +25,7 @@ const isLogin = computed(() => Boolean(userStore.userInfo.is_login))
 const collapsed = computed(() => appStore.siderCollapsed)
 
 function handleAdd() {
-  chatStore.addHistory({ title: 'New Chat', uuid: Date.now(), isEdit: false })
+  chatStore.addHistory({ title: 'New Chat', uuid: Date.now(), isEdit: false, model: 'gpt-3.5-turbo' })
   if (isMobile.value)
     appStore.setSiderCollapsed(true)
 }

@@ -1,7 +1,7 @@
 import express from 'express'
-import type { RequestProps } from './types'
+import type { RequestProps, RequestPropsEx } from './types'
 import type { ChatMessage } from './chatgpt'
-import { chatConfig, chatReplyProcess, currentModel } from './chatgpt'
+import { chatConfig, chatReplyProcess, currentModel, chatReplyProcessEx } from './chatgpt'
 import { auth } from './middleware/auth'
 import { limiter } from './middleware/limiter'
 // import { isNotEmptyString } from './utils/is'
@@ -30,7 +30,7 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
   res.setHeader('Content-type', 'application/octet-stream')
     let results:any
   try {
-    const { prompt, options = {}, systemMessage, username } = req.body as RequestProps
+    const { prompt, options = {}, systemMessage, username, model } = req.body as RequestPropsEx
     results= await before_user_chat(username)
     if (!results.status){
         global.console.log("/chat-process  error ")
@@ -38,8 +38,8 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
     }
     else {
         let firstChunk = true
-        global.console.log("/chat-process  start ")
-        await chatReplyProcess({
+        global.console.log("/chat-process  start ", model)
+        await chatReplyProcessEx(model, {
           message: prompt,
           lastContext: options,
           process: (chat: ChatMessage) => {
