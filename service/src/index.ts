@@ -1,3 +1,4 @@
+import { useMessage } from 'naive-ui';
 import express from 'express'
 import type { RequestProps, RequestPropsEx } from './types'
 import type { ChatMessage } from './chatgpt'
@@ -7,6 +8,9 @@ import { limiter } from './middleware/limiter'
 // import { isNotEmptyString } from './utils/is'
 import { getUserDB, setUserDB, defaultUserDB } from './database/users_db'
 import { verifySecretDB } from './database/secret_db'
+import { get_service_env, verify_new_ip } from './database/apikey_db'
+import { get_web_db, set_web_db, del_web_db } from './database/other_db'
+
 import { user_register_code_verify, user_code_reduce } from './database/member_secret_db'
 import { user_register_name_verify, user_register_new_with_code, user_login, get_member_info, before_user_chat, after_user_chat, user_code_active } from './database/members_db'
 import e from 'express'
@@ -38,7 +42,7 @@ router.post('/chat-process', [auth, limiter], async (req, res) => {
     }
     else {
         let firstChunk = true
-        global.console.log("/chat-process  start ", model)
+        global.console.log("/chat-process  start ", model, prompt)
         await chatReplyProcessEx(model, {
           message: prompt,
           lastContext: options,
@@ -75,8 +79,8 @@ router.post('/config', auth, async (req, res) => {
 
 router.post('/session', async (req, res) => {
   try {
-    const { id } = req.body as { id: string }
-    // global.console.log("session", id)
+    const { id, address } = req.body as { id: string, address: string }
+    global.console.log("session", id, address)
     // const AUTH_SECRET_KEY = process.env.AUTH_SECRET_KEY
     // const hasAuth = isNotEmptyString(AUTH_SECRET_KEY)
     const results = await getUserDB(id)
@@ -138,23 +142,26 @@ router.post('/user_init', auth, async (req, res) => {
     }
 })
 
-async function user_shared_handle(shared_id: string) {
+async function user_shared_handle(shared_id: string, address: string) {
     const results = await getUserDB(shared_id)
     // global.console.log("查询", results)
     if (results){
-        // results.ext_available_num=results.ext_available_num+20  // 分享链接+20
-        // global.console.log("user_shared_handle 查询成功", results)
-        // global.console.log("user_shared_handle 查询成功dddd", results.ext_available_num)
-        setUserDB(shared_id, { ext_available_num: (Number(results.ext_available_num)+20) })
+        const result_ip = await verify_new_ip(address)
+        if (result_ip && result_ip.status){
+            // results.ext_available_num=results.ext_available_num+20  // 分享链接+20
+            // global.console.log("user_shared_handle 查询成功", results)
+            // global.console.log("user_shared_handle 查询成功dddd", results.ext_available_num)
+            setUserDB(shared_id, { ext_available_num: (Number(results.ext_available_num)+20) })
+        }
     }
 }
 
 
 router.post('/user_init_shared', auth, async (req, res) => {
-    const { id, shared_id } = req.body as { id: string, shared_id: string }
-    // global.console.log("user_init_shared", id, shared_id)
+    const { id, shared_id, address } = req.body as { id: string, shared_id: string, address: string}
+    global.console.log("user_init_shared", id, shared_id, address)
     try {
-        await user_shared_handle(shared_id)
+        await user_shared_handle(shared_id, address)
         res.send({ status: 'Success', message: 'user_init_shared successfully', data: null})
     }
     catch (error) {
@@ -185,7 +192,7 @@ router.post('/user_register_code', auth, async (req, res) => {
                     res.send({ status: 'failed', message: reg_result.message, data: null})
                 else{
                     //设置密钥使用消耗
-                    await user_code_reduce(code_result.results)
+                    await user_code_reduce(username, code_result.results)
                     res.send({ status: 'success', message: "注册成功", data: null})
                 }
             }
@@ -257,7 +264,7 @@ router.post('/code_active', auth, async (req, res) => {
                 res.send({ status: 'failed', message: use_result.message, data: null})
             else{
                 //设置密钥使用消耗
-                await user_code_reduce(code_result.results)
+                await user_code_reduce(username, code_result.results)
                 res.send({ status: 'success', message: "激活成功", data: null})
             }
         }
@@ -267,6 +274,61 @@ router.post('/code_active', auth, async (req, res) => {
     }
 })
 
+
+router.post('/get_db', auth, async (req, res) => {
+    const { key, id } = req.body as { key: string, id: string }
+    global.console.log("get_db post", key, id)
+    try {
+        //验证用户名是否可用
+        const result=await get_web_db(key, id)
+        global.console.log("env_db", result)
+        if (!result) {
+            console.log('get_db11122222')
+            res.send({ status: 'failed', message: "获取配置失败", data: null})
+        }
+        else if (!result.status) {
+            console.log('get_db111', key, result.status)
+            res.send({ status: 'failed', message: "获取配置失败", data: null})
+        }
+        else {
+            console.log('get_dbooooosuccess', key)
+            res.send({ status: 'success', message: "获取配置成功", data: result.data})
+        }
+    }
+    catch (error) {
+        console.log('get_dbooooooooooo', error.message)
+        res.send({ status: 'failed', message: "获取配置失败", data: null})
+    }
+})
+
+router.post('/set_db', auth, async (req, res) => {
+    const { key, id, data } = req.body as { key: string, id: string, data: any }
+    // global.console.log("set_db post", key, id, data)
+    try {
+        //验证用户名是否可用
+        await set_web_db(key, id, data)
+        global.console.log("set_web_db  成功111111")
+        res.send({ status: 'success', message: "设置成功", data: null})
+    }
+    catch (error) {
+        global.console.log(error)
+        res.send({ status: 'failed', message: "设置失败", data: null})
+    }
+})
+
+router.post('/del_db', auth, async (req, res) => {
+    const { key, id } = req.body as { key: string, id: string }
+    global.console.log("del_db post", key, id)
+    try {
+        //验证用户名是否可用
+        await del_web_db(key, id)
+        res.send({ status: 'success', message: "删除成功", data: null})
+    }
+    catch (error) {
+        global.console.log(error)
+        res.send({ status: 'failed', message: "删除失败", data: null})
+    }
+})
 
 app.use('', router)
 app.use('/api', router)

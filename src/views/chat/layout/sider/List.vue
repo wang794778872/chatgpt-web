@@ -95,6 +95,14 @@ function isActive(uuid: number) {
                   </template>
                   {{ $t('chat.deleteHistoryConfirm') }}
                 </NPopconfirm>
+                <!-- <NPopconfirm placement="bottom">
+                  <template #trigger>
+                    <button class="p-1">
+                      <SvgIcon icon="ri:information-line" />
+                    </button>
+                  </template>
+                  使用模型：{{ item.model?item.model:'gpt-3.5-turbo' }}
+                </NPopconfirm> -->
               </template>
             </div>
           </a>

@@ -10,6 +10,14 @@ export const useUserStore = defineStore('user-store', {
       this.recordState()
     },
 
+    setLoginState(state: boolean, name: string) {
+        if (state){
+            this.updateUserInfo({ is_login: true, login_time: (new Date().getTime()), member_id: name})
+        }
+        else 
+            this.updateUserInfo({ is_login: false, member_id: ''})
+    },
+
     resetUserInfo() {
       this.userInfo = { ...defaultSetting().userInfo }
       this.recordState()

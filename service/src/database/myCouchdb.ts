@@ -32,6 +32,7 @@ function createDB(db_name: string, monitor?: boolean) {
 }
 
 async function resetDB(db: any, data: any) {
+    console.log("resetDB", data)
     await db.insert(data, function(err:Error, result: any) {
         if (err) {
             global.console.log('插入文档失败：', err)
@@ -67,6 +68,57 @@ async function getDB(db: any, id: string): any {
     }
 }
 
+async function updateDB(db: any, id: string, data: any) {
+    global.console.log(id, data)
+    let doc: any
+    try {
+        doc = await db.get(id)
+    } catch (error) {
+        // global.console.log(error)
+        global.console.log("updateDB", error.message)
+        if (error && error.message && (error.message == "missing" || error.message == 'deleted'))
+        {
+            global.console.log("updateDB11111111111111111", error.message)
+            doc = {_id: id}
+            if (typeof data == "string")
+            {
+                const obj_data = JSON.parse(data)
+                doc = {...doc, ...obj_data}
+            }
+            else{
+                doc = {...doc, ...data}
+            }
+            // Object.assign(doc, data)
+            global.console.log(doc)
+            try {
+                return await db.insert(doc)
+            } catch (error) {
+                global.console.log("updateDB222222222", error.message)
+                return error
+            }
+        }
+        return null
+    }
+    try {
+        if (typeof data == "string")
+        {
+            const obj_data = JSON.parse(data)
+            doc = {...doc, ...obj_data}
+        }
+        else{
+            doc = {...doc, ...data}
+        }
+        global.console.log(doc)
+        // Object.assign(doc, data)
+        await db.insert(doc)
+        global.console.log("更新成功")
+    } catch (error) {
+        return error
+    }
+    return "更新成功"
+}
+
+
 async function deleteDB(db: any, id: string) {
     try {
         const doc = await db.get(id)
@@ -77,4 +129,4 @@ async function deleteDB(db: any, id: string) {
     }
 }
 
-export { createDB, resetDB, setDB, getDB, deleteDB }
+export { createDB, resetDB, setDB, getDB, deleteDB, updateDB }

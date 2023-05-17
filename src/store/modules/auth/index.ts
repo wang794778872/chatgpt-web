@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { getToken, removeToken, setToken } from './helper'
 import { store } from '@/store'
-import { fetchSession } from '@/api'
+import { getIPAddress, fetchSession } from '@/api'
 
 interface SessionResponse {
   auth: boolean
@@ -12,12 +12,14 @@ interface SessionResponse {
 export interface AuthState {
   token: string | undefined
   session: SessionResponse | null
+  address: string| null
 }
 
 export const useAuthStore = defineStore('auth-store', {
   state: (): AuthState => ({
     token: getToken(),
     session: null,
+    address: "0.0.0.0",
   }),
 
   getters: {
@@ -28,8 +30,18 @@ export const useAuthStore = defineStore('auth-store', {
 
   actions: {
     async getSession(id: string) {
+        for (let i = 0; i < 10; i++) {
+            try {
+                this.address = await getIPAddress()
+                console.log( this.address)
+                break
+            }
+            catch (error) {
+                console.log(error)
+            }
+        }
       try {
-        const { data } = await fetchSession<SessionResponse>(id)
+        const { data } = await fetchSession<SessionResponse>(id, this.address)
         this.session = { ...data }
         return Promise.resolve(data)
       }

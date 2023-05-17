@@ -10,7 +10,8 @@ import { isNotEmptyString } from '../utils/is'
 import type { ApiModel, ChatContext, ChatGPTUnofficialProxyAPIOptions, ModelConfig } from '../types'
 import type { BalanceResponse, RequestOptions } from './types'
 import { get_openai_apikey } from 'src/database/apikey_db'
-
+import Keyv from 'keyv'
+import QuickLRU from 'quick-lru'
 const { HttpsProxyAgent } = httpsProxyAgent
 
 dotenv.config()
@@ -34,7 +35,7 @@ if (!isNotEmptyString(process.env.OPENAI_API_KEY) && !isNotEmptyString(process.e
   throw new Error('Missing OPENAI_API_KEY or OPENAI_ACCESS_TOKEN environment variable')
 
 let api: ChatGPTAPI | ChatGPTUnofficialProxyAPI
-
+let myMessageStore = new Keyv<ChatMessage, any>({store: new QuickLRU<string, ChatMessage>({ maxSize: 10000 })})
 
 async function initGPTAPI() {
     if (isNotEmptyString(process.env.OPENAI_API_KEY)) {
@@ -50,19 +51,19 @@ async function initGPTAPI() {
     
         // increase max token limit if use gpt-4
         if (model.toLowerCase().includes('gpt-4')) {
-        // if use 32k model
-        if (model.toLowerCase().includes('32k')) {
-            options.maxModelTokens = 32768
-            options.maxResponseTokens = 8192
-        }
-        else {
-            options.maxModelTokens = 8192
-            options.maxResponseTokens = 2048
-        }
+            // if use 32k model
+            if (model.toLowerCase().includes('32k')) {
+                options.maxModelTokens = 32768
+                options.maxResponseTokens = 8192
+            }
+            else {
+                options.maxModelTokens = 8192
+                options.maxResponseTokens = 2048
+            }
         }
         else{       //默认tokens限制
             options.maxModelTokens = 4096
-            options.maxResponseTokens = 2048
+            options.maxResponseTokens = 4000
         }
     
         if (isNotEmptyString(OPENAI_API_BASE_URL))
@@ -101,23 +102,24 @@ async function initGPTAPIEx(apikey: string, model:string) {
         apiKey: apikey,
         completionParams: { model },
         debug: !disableDebug,
+        messageStore: myMessageStore,
         }
     
         // increase max token limit if use gpt-4
         if (model.toLowerCase().includes('gpt-4')) {
-        // if use 32k model
-        if (model.toLowerCase().includes('32k')) {
-            options.maxModelTokens = 32768
-            options.maxResponseTokens = 8192
-        }
-        else {
-            options.maxModelTokens = 8192
-            options.maxResponseTokens = 2048
-        }
+            // if use 32k model
+            if (model.toLowerCase().includes('32k')) {
+                options.maxModelTokens = 32768
+                options.maxResponseTokens = 8192
+            }
+            else {
+                options.maxModelTokens = 8192
+                options.maxResponseTokens = 2048
+            }
         }
         else{       //默认tokens限制
             options.maxModelTokens = 4096
-            options.maxResponseTokens = 2048
+            options.maxResponseTokens = 1000
         }
     
         if (isNotEmptyString(OPENAI_API_BASE_URL))
@@ -200,16 +202,15 @@ async function chatReplyProcessEx(model: string, options: RequestOptions) {
             return sendResponse({ type: 'Fail', message: "api error" })
         let options: SendMessageOptions = { timeoutMs }
         if (apiModel === 'ChatGPTAPI') {
-        if (isNotEmptyString(systemMessage))
-            options.systemMessage = systemMessage
+            if (isNotEmptyString(systemMessage))
+                options.systemMessage = systemMessage
         }
 
         if (lastContext != null) {
-        if (apiModel === 'ChatGPTAPI')
-
-            options.parentMessageId = lastContext.parentMessageId
-        else
-            options = { ...lastContext }
+            if (apiModel === 'ChatGPTAPI')
+                options.parentMessageId = lastContext.parentMessageId
+            else
+                options = { ...lastContext }
         }
 
         const response = await apiEx.sendMessage(message, {
@@ -228,7 +229,7 @@ async function chatReplyProcessEx(model: string, options: RequestOptions) {
             apiEx.apiKey=change_apikey
         }
         if (Reflect.has(ErrorCodeMessage, code))
-        return sendResponse({ type: 'Fail', message: ErrorCodeMessage[code] })
+            return sendResponse({ type: 'Fail', message: ErrorCodeMessage[code] })
         return sendResponse({ type: 'Fail', message: error.message ?? 'Please check the back-end console' })
     }
 }

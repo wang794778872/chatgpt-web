@@ -29,14 +29,14 @@ async function handleActive() {
     if (!userStore.userInfo.member_id) {
         message.error("激活失败，用户未登陆")
     }
-    console.log("handleMemberInfo", userStore.userInfo.member_id)
+    // console.log("handleMemberInfo", userStore.userInfo.member_id)
     try {
         const { data } = await fetchCodeActive<SessionResponse>(userStore.userInfo.member_id, codeValue.value.trim())
-        console.log("handleMemberInfo", data)
+        // console.log("handleMemberInfo", data)
         return afterhandleActive(data)
     }
     catch (error: any) {
-        console.log(error)
+        // console.log(error)
         return afterhandleActive(error)
     }
 }

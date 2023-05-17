@@ -1,6 +1,7 @@
 import { ss } from '@/utils/storage'
 // import { deCrypto, enCrypto } from '@/utils/crypto'
-// import { useAuthStore } from '@/store'
+import { useAuthStore } from '@/store'
+
 import { fetchUserInit, fetchUserInitShared } from '@/api'
 const LOCAL_NAME = 'userStorage'
 
@@ -44,7 +45,7 @@ export function getNewUserId(): string {
     // const user_id: string = enCrypto(`ZL-${now}`)
     const user_id: string = `ZL-${now}${rand_num}`
     fetchUserInit(user_id)
-    console.log("getNewUserId user_id", `ZL-${now}`, user_id, rand_num)
+    // console.log("getNewUserId user_id", `ZL-${now}`, user_id, rand_num)
     return user_id
 }
 
@@ -58,9 +59,10 @@ export function setShare(Setting: UserState): UserState {
     // console.log("setShare", Setting.userInfo.id, Setting.userInfo.is_new)
     if (Setting.userInfo.is_new && Setting.userInfo.shared_id)    //新用户
     {
+        const address = useAuthStore().address
         // 新用户如果有分享码，支持分享逻辑
-        // console.log("shared_id", Setting.userInfo.shared_id)
-        fetchUserInitShared(Setting.userInfo.id, Setting.userInfo.shared_id)
+        console.log("shared_id", Setting.userInfo.shared_id, address)
+        fetchUserInitShared(Setting.userInfo.id, Setting.userInfo.shared_id, address)
         Setting.userInfo.is_new=false
     }
     // console.log("setShare222", Setting.userInfo.id, Setting.userInfo.is_new)
@@ -69,20 +71,20 @@ export function setShare(Setting: UserState): UserState {
 
 export function getLocalState(): UserState {
     const localSetting: UserState | undefined = ss.get(LOCAL_NAME)
-    console.log("defaultSetting", defaultSetting())
-    console.log("localSetting", localSetting)
+    // console.log("defaultSetting", defaultSetting())
+    // console.log("localSetting", localSetting)
     let SetUserInfo=defaultSetting().userInfo
     if (localSetting)
         SetUserInfo= { ...defaultSetting().userInfo, ...localSetting.userInfo }
 
-    console.log("getLocalState", SetUserInfo)
+    // console.log("getLocalState", SetUserInfo)
     if (!SetUserInfo.id || !verify_user_id(SetUserInfo.id))
         SetUserInfo.id=getNewUserId()
-    console.log("getLocalState", SetUserInfo)
+    // console.log("getLocalState", SetUserInfo)
     const Setting2=setShare({userInfo: SetUserInfo})
-    console.log("getLocalState", Setting2)
+    // console.log("getLocalState", Setting2)
     setLocalState(Setting2)
-    console.log("getLocalState", Setting2)
+    // console.log("getLocalState", Setting2)
     return Setting2
 }
 

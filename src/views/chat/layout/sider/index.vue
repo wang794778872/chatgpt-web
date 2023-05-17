@@ -2,6 +2,7 @@
 import type { CSSProperties } from 'vue'
 import { computed, ref, watch } from 'vue'
 import { NButton, NLayoutSider } from 'naive-ui'
+// import { NButton, NLayoutSider, NDialog, NSelect } from 'naive-ui'
 import List from './List.vue'
 import Footer from './Footer.vue'
 import { useAppStore, useChatStore } from '@/store'
@@ -24,11 +25,66 @@ const userStore = useUserStore()
 const isLogin = computed(() => Boolean(userStore.userInfo.is_login))
 const collapsed = computed(() => appStore.siderCollapsed)
 
-function handleAdd() {
-  chatStore.addHistory({ title: 'New Chat', uuid: Date.now(), isEdit: false, model: 'gpt-3.5-turbo' })
-  if (isMobile.value)
-    appStore.setSiderCollapsed(true)
+// async function handleAdd() {
+//     const result = await Swal.fire({
+//         title: '请选择',
+//         html: `
+//             <div>
+//             模型：
+//             <select id="selectBox1" class="swal2-input">
+//                 <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+//                 <option value="gpt-4-turbo">gpt-4-turbo</option>
+//             </select>
+//             </div>
+//         `,
+//         // html: `
+//         //     <div>
+//         //     模型：
+//         //     <select id="selectBox1" class="swal2-input">
+//         //         <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+//         //         <option value="gpt-4-turbo">gpt-4-turbo</option>
+//         //     </select>
+//         //     </div>
+//         //     <div>
+//         //     角色：
+//         //     <select id="selectBox2" class="swal2-input">
+//         //         <option value="online">online</option>
+//         //         <option value="debug">test</option>
+//         //     </select>
+//         //     </div>
+//         // `,
+//         showCancelButton: true,
+//         confirmButtonText: '确认',
+//         cancelButtonText: '取消',
+//         position: 'top',
+//         toast: true,
+//         preConfirm: () => {
+//             return [
+//                         document.getElementById('selectBox1').value,
+//                         "default"
+//                         // document.getElementById('selectBox2').value
+//                     ];
+//         }
+//     })
+//     if (result && result.isConfirmed == true) {
+//         console.log(`您选择模型： ${result.value[0]}`)
+//         // console.log(`您选择角色： ${result.value[1]}`)
+//         chatStore.addHistory({ title: 'New Chat', uuid: Date.now(), isEdit: false, model: result.value[0] })    //'gpt-3.5-turbo'
+//         if (isMobile.value)
+//             appStore.setSiderCollapsed(true)
+//     }
+//     else{
+//         console.log('取消创建聊天')
+//     }
+// }
+
+
+async function handleAdd() {
+    chatStore.addHistory({ title: 'New Chat', uuid: Date.now(), isEdit: false, model: 'gpt-3.5-turbo' })    //'gpt-3.5-turbo'
+    if (isMobile.value)
+        appStore.setSiderCollapsed(true)
 }
+
 
 function handleUpdateCollapsed() {
   appStore.setSiderCollapsed(!collapsed.value)
@@ -67,8 +123,6 @@ watch(
 // const userStore = useUserStore()
 
 
-
-
 </script>
 <template>
   <NLayoutSider
@@ -81,13 +135,13 @@ watch(
     bordered
     :style="getMobileClass"
     @update-collapsed="handleUpdateCollapsed"
-  >
-    <div class="flex flex-col h-full" :style="mobileSafeArea">
-      <main class="flex flex-col flex-1 min-h-0">
+    >
+        <div class="flex flex-col h-full" :style="mobileSafeArea">
+        <main class="flex flex-col flex-1 min-h-0">
         <div class="p-4">
-          <NButton dashed block @click="handleAdd">
-            {{ $t('chat.newChatButton') }}
-          </NButton>
+            <NButton dashed block @click="handleAdd">
+                {{ $t('chat.newChatButton') }}
+            </NButton>
         </div>
         <div class="flex-1 min-h-0 pb-4 overflow-hidden">
           <List />
@@ -105,11 +159,6 @@ watch(
             <NButton v-else  block @click="showPerson = true">
                 {{ $t('store.personalLogin') }}
             </NButton>
-        <!-- </div>
-        <div class="p-4"> -->
-            <!-- <NButton block @click="copyLink">
-                {{ $t('store.copyShareLink') }}
-            </NButton> -->
         </div>
       </main>
       <Footer />

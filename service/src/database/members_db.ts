@@ -93,6 +93,7 @@ async function user_code_active(username: string, code_info: any) {
     else if (code_info.type == 0) {  //时长卡
         const now: number = new Date().getTime()
         if (results.stop_time < now) {   //已过期
+            results.active_time=now
             results.stop_time=results.active_time+code_info.duration*24*60*60*1000
         }
         else{

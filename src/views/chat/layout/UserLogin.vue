@@ -41,10 +41,8 @@ function afterHandleRegister(name: string, data: any) {
     try {
         if (data.status == "success"){
             ms.success('注册成功')
-            userStore.userInfo.is_login=true
-            userStore.userInfo.login_time=new Date().getTime()
-            userStore.userInfo.member_id=register_name.value.trim()
-            userStore.updateUserInfo({ is_login: true, login_time: (new Date().getTime()), member_id: name})
+
+            userStore.setLoginState(true, register_name.value.trim())
             window.location.reload()
         }
         else {
@@ -57,10 +55,10 @@ function afterHandleRegister(name: string, data: any) {
 }
 
 async function handleRegister() {
-    console.log(register_name.value.trim())
-    console.log(register_passwd1.value.trim())
-    console.log(register_passwd2.value.trim())
-    console.log(register_code.value.trim())
+    // console.log(register_name.value.trim())
+    // console.log(register_passwd1.value.trim())
+    // console.log(register_passwd2.value.trim())
+    // console.log(register_code.value.trim())
     if (!register_name.value.trim() || !register_passwd1.value.trim() || !register_passwd2.value.trim() || !register_code.value.trim()) {
         ms.error("填写不正确")
     }
@@ -72,7 +70,7 @@ async function handleRegister() {
     else {
         try {
             const { data } = await fetchUserRegisterWithCode<SessionResponse>(register_name.value.trim(), register_passwd1.value.trim(), register_code.value.trim())
-            console.log("fetchUserRegisterWithCode", data.message,  data)
+            // console.log("fetchUserRegisterWithCode", data.message,  data)
             afterHandleRegister(register_name.value.trim(), data)
         }
         catch (error: any) {
@@ -87,8 +85,7 @@ function afterHandleLogin(name:string, data: any) {
         {
             if (data.status == "success"){
                 ms.success("登陆成功")
-                userStore.userInfo.is_login=true
-                userStore.updateUserInfo({ is_login: true, login_time: (new Date().getTime()), member_id: name})
+                userStore.setLoginState(true, name)
                 window.location.reload()
             }
             else {
@@ -104,8 +101,8 @@ function afterHandleLogin(name:string, data: any) {
 }
 
 async function handleLogin() {
-    console.log(login_name.value.trim())
-    console.log(login_passwd.value.trim())
+    // console.log(login_name.value.trim())
+    // console.log(login_passwd.value.trim())
     if (!login_name.value.trim() || !login_passwd.value.trim()) {
         ms.error("用户名 or 密码不正确")
     }
@@ -115,8 +112,8 @@ async function handleLogin() {
     else {
         try {
             const { data } = await fetchUserLogin<SessionResponse>(login_name.value.trim(), login_passwd.value.trim())
-            console.log(data)
-            console.log(data.message)
+            // console.log(data)
+            // console.log(data.message)
             afterHandleLogin(login_name.value.trim(), data)
         }
         catch (error: any) {
@@ -124,7 +121,7 @@ async function handleLogin() {
         }
     }
 
-    console.log("登陆")
+    // console.log("登陆")
 }
 
 async function handleVisitor() {

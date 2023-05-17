@@ -34,7 +34,7 @@ const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
 const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom } = useScroll()
 const { usingContext, toggleUsingContext } = useUsingContext()
 
-const wxQRCodeUrl = ref('https://i.328888.xyz/2023/04/27/i9wNO8.png')
+const wxQRCodeUrl = ref('https://www.aifuturecome.com/wp-content/uploads/2023/05/我的.png')
 
 const { uuid } = route.params as { uuid: string }
 const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
@@ -63,7 +63,7 @@ const showDataSources = computed(() => {
         }
         let tmpDataSources = dataSources.value.slice()
         tmpDataSources.unshift(prologue)
-        console.log(tmpDataSources)
+        // console.log(tmpDataSources)
         return tmpDataSources
     }
     else {
@@ -89,7 +89,13 @@ dataSources.value.forEach((item, index) => {
 })
 
 function handleSubmit() {
-  onConversation()
+    if (userStore.userInfo.is_login == false && userStore.userInfo.available_num <= 0) {
+        ms.error("对不起，你的体验对话额度已用完，更多功能体验请登陆会员，谢谢")
+    //   console.log('额度用完')
+    }
+    else{
+        onConversation()
+    }
 }
 
 async function onConversation() {
@@ -138,7 +144,7 @@ async function onConversation() {
     },
   )
   scrollToBottom()
-    console.log("uuidModel", uuidModel.value)
+    // console.log("uuidModel", uuidModel.value)
   try {
     let lastText = ''
     const fetchChatAPIOnce = async () => {
@@ -192,6 +198,7 @@ async function onConversation() {
     }
 
     if (userStore.userInfo.is_login == false && userStore.userInfo.available_num < 0) {
+        ms.warning("对不起，你的体验对话额度已用完，更多功能体验请登陆会员，谢谢")
     //   console.log('额度用完')
     }
     else {

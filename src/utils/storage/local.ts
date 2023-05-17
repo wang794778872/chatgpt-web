@@ -40,6 +40,7 @@ export function createLocalStorage(options?: { expire?: number | null; crypto?: 
 
       if (storageData) {
         const { data, expire } = storageData
+        // console.log(key, data)
         if (expire === null || expire >= Date.now())
           return data
       }
@@ -67,4 +68,4 @@ export function createLocalStorage(options?: { expire?: number | null; crypto?: 
 
 export const ls = createLocalStorage()
 
-export const ss = createLocalStorage({ expire: null, crypto: false })
+export const ss_local = createLocalStorage({ expire: null, crypto: false })

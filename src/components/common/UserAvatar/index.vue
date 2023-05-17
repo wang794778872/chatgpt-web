@@ -76,7 +76,9 @@ function copyLink() {
             <span style="flex-basis: 0; flex-grow: 1; min-width: 0;"> Hi， {{ userInfo.member_id }}</span>
         </div>
         <div v-if="userInfo.is_login == false" style="flex-basis: 100%; display: flex; margin-top: 5px;">
-            <span style="flex-basis: 0; flex-grow: 1; min-width: 0;">  剩余对话次数： {{ userInfo.available_num }}</span>
+            <span style="flex-basis: 0; flex-grow: 1; min-width: 0;">  
+                剩余对话次数： {{ userInfo.available_num > 0 ? userInfo.available_num : 0 }}
+            </span>
         </div>
         <!-- <div style="flex-basis: 100%; display: flex; margin-top: 5px;">
             <span style="flex-basis: 0; flex-grow: 1; min-width: 0;font-size: 8px;color: blue;">{{ $t('store.gpthometip') }}</span>

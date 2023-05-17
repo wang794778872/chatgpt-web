@@ -41,8 +41,10 @@
     "@types/node": "^18.14.6",
     "couchdb": "^0.3.8",
     "eslint": "^8.35.0",
+    "keyv": "^4.5.2",
     "lokijs": "^1.5.12",
     "nano": "^10.1.2",
+    "quick-lru": "^6.1.1",
     "rimraf": "^4.3.0",
     "tsup": "^6.6.3",
     "typescript": "^4.9.5"

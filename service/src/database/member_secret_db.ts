@@ -23,11 +23,12 @@ async function user_register_code_verify(code: string) {
     }
 }
 
-async function user_code_reduce(results: any) {
+async function user_code_reduce(username: string, results: any) {
     global.console.log("user_code_reduce")
     results.avail_count--
+    const addres={ user: username }
     // Object.assign(result, { avail_count: avail_count })
-    resetDB(memberSecretDb, results)
+    resetDB(memberSecretDb, { ...results, ...addres })
 }
 
 export { user_register_code_verify, user_code_reduce }

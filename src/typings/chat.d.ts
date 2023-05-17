@@ -21,7 +21,7 @@ declare namespace Chat {
 		active: number | null
 		usingContext: boolean;
 		history: History[]
-		chat: { uuid: number; data: Chat[]; modle?: string }[]
+		chat: { uuid: number; data: Chat[]; model?: string }[]
 	}
 
 	interface ConversationRequest {

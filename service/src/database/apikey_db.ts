@@ -1,4 +1,4 @@
-import { createDB, getDB, resetDB } from './myCouchdb'
+import { createDB, getDB, resetDB, setDB } from './myCouchdb'
 
 const apikeydb = createDB('service-env')
 // global.console.log("apikeydb", apikeydb)
@@ -43,4 +43,29 @@ async function get_openai_apikey(change: boolean): string {
     return USE_OPENAI_API_KEY
 }
 
-export { get_openai_apikey }
+async function get_service_env(name: string) {
+    const result = await getDB(apikeydb, name)
+        global.console.log(result)
+    if (result){
+        return { status: true, message: "获取成功", data: result }
+    } 
+    return { status: false, message: "获取失败", data: null }
+}
+
+async function verify_new_ip(ip:string) {
+    const result = await getDB(apikeydb, 'SHARED_IP')
+        global.console.log("verify_new_ip", result)
+    if (result){
+        if (result.ip_list.includes(ip))
+            return { status: false, message: "ip已使用过", data: result }
+        else{
+            result.ip_list.push(ip)
+            setDB(apikeydb, 'SHARED_IP', result)
+            return { status: true, message: "IP可用", data: result }
+        }
+    } 
+    return { status: false, message: "失败", data: null }
+}
+
+
+export { get_openai_apikey, get_service_env, verify_new_ip }
