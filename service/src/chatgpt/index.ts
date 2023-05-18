@@ -10,8 +10,6 @@ import { isNotEmptyString } from '../utils/is'
 import type { ApiModel, ChatContext, ChatGPTUnofficialProxyAPIOptions, ModelConfig } from '../types'
 import type { BalanceResponse, RequestOptions } from './types'
 import { get_openai_apikey } from 'src/database/apikey_db'
-import Keyv from 'keyv'
-import QuickLRU from 'quick-lru'
 const { HttpsProxyAgent } = httpsProxyAgent
 
 dotenv.config()
@@ -35,7 +33,7 @@ if (!isNotEmptyString(process.env.OPENAI_API_KEY) && !isNotEmptyString(process.e
   throw new Error('Missing OPENAI_API_KEY or OPENAI_ACCESS_TOKEN environment variable')
 
 let api: ChatGPTAPI | ChatGPTUnofficialProxyAPI
-let myMessageStore = new Keyv<ChatMessage, any>({store: new QuickLRU<string, ChatMessage>({ maxSize: 10000 })})
+let api35: ChatGPTAPI | ChatGPTUnofficialProxyAPI
 
 async function initGPTAPI() {
     if (isNotEmptyString(process.env.OPENAI_API_KEY)) {
@@ -102,7 +100,6 @@ async function initGPTAPIEx(apikey: string, model:string) {
         apiKey: apikey,
         completionParams: { model },
         debug: !disableDebug,
-        messageStore: myMessageStore,
         }
     
         // increase max token limit if use gpt-4
@@ -119,7 +116,7 @@ async function initGPTAPIEx(apikey: string, model:string) {
         }
         else{       //默认tokens限制
             options.maxModelTokens = 4096
-            options.maxResponseTokens = 1000
+            options.maxResponseTokens = 2048
         }
     
         if (isNotEmptyString(OPENAI_API_BASE_URL))
@@ -143,6 +140,7 @@ async function initGPTAPIEx(apikey: string, model:string) {
     else {
         await initGPTToken()
     }
+    api35 = await initGPTAPIEx(process.env.OPENAI_API_KEY, 'gpt-3.5-turbo')
 })()
 
 async function chatReplyProcess(options: RequestOptions) {
@@ -197,9 +195,12 @@ async function chatReplyProcessEx(model: string, options: RequestOptions) {
     const { message, lastContext, process, systemMessage } = options
     try {
         const get_apikey = await get_openai_apikey(false)
-        const apiEx= await initGPTAPIEx(get_apikey, model)
+        if (model != 'gpt-3.5-turbo')
+            return sendResponse({ type: 'Fail', message: "mode not support" })
+        const apiEx= api35
         if (!apiEx)
             return sendResponse({ type: 'Fail', message: "api error" })
+        apiEx.apiKey=get_apikey
         let options: SendMessageOptions = { timeoutMs }
         if (apiModel === 'ChatGPTAPI') {
             if (isNotEmptyString(systemMessage))
