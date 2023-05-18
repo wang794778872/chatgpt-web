@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 // import { ref, computed } from 'vue'
 
-const wxQRCodeUrl = ref('https://i.328888.xyz/2023/04/27/i9wNO8.png')
+const wxQRCodeUrl = ref('https://s1.locimg.com/2023/05/04/5825fc6f9b82b.png')
 
 </script>
 <template>
