@@ -34,7 +34,7 @@ if (!isNotEmptyString(process.env.OPENAI_API_KEY) && !isNotEmptyString(process.e
   throw new Error('Missing OPENAI_API_KEY or OPENAI_ACCESS_TOKEN environment variable')
 
 let api: ChatGPTAPI | ChatGPTUnofficialProxyAPI
-
+let api35: ChatGPTAPI | ChatGPTUnofficialProxyAPI
 
 async function initGPTAPI() {
     if (isNotEmptyString(process.env.OPENAI_API_KEY)) {
@@ -141,6 +141,7 @@ async function initGPTAPIEx(apikey: string, model:string) {
     else {
         await initGPTToken()
     }
+    api35 = await initGPTAPIEx(process.env.OPENAI_API_KEY, 'gpt-3.5-turbo')
 })()
 
 async function chatReplyProcess(options: RequestOptions) {
@@ -195,9 +196,12 @@ async function chatReplyProcessEx(model: string, options: RequestOptions) {
     const { message, lastContext, process, systemMessage } = options
     try {
         const get_apikey = await get_openai_apikey(false)
-        const apiEx= await initGPTAPIEx(get_apikey, model)
+        if (model != 'gpt-3.5-turbo')
+            return sendResponse({ type: 'Fail', message: "mode not support" })
+        const apiEx= api35
         if (!apiEx)
             return sendResponse({ type: 'Fail', message: "api error" })
+        apiEx.apiKey=get_apikey
         let options: SendMessageOptions = { timeoutMs }
         if (apiModel === 'ChatGPTAPI') {
         if (isNotEmptyString(systemMessage))
