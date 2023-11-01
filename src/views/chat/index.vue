@@ -1,152 +1,155 @@
 <script setup lang='ts'>
-import type { Ref } from 'vue'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { storeToRefs } from 'pinia'
-import { NAutoComplete, NButton, NInput, useDialog, useMessage } from 'naive-ui'
-import html2canvas from 'html2canvas'
-import { Message } from './components'
-import { useScroll } from './hooks/useScroll'
-import { useChat } from './hooks/useChat'
-import { useCopyCode } from './hooks/useCopyCode'
-import { useUsingContext } from './hooks/useUsingContext'
-import HeaderComponent from './components/Header/index.vue'
-import { HoverButton, SvgIcon } from '@/components/common'
-import { useBasicLayout } from '@/hooks/useBasicLayout'
-import { useChatStore, usePromptStore, useUserStore } from '@/store'
-import { fetchChatAPIProcess } from '@/api'
-import { t } from '@/locales'
+import type { Ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
+import { useRoute } from "vue-router";
+import { storeToRefs } from "pinia";
+import {
+  NAutoComplete,
+  NButton,
+  NInput,
+  useDialog,
+  useMessage,
+} from "naive-ui";
+import html2canvas from "html2canvas";
+import { Message } from "./components";
+import { useScroll } from "./hooks/useScroll";
+import { useChat } from "./hooks/useChat";
+import { useCopyCode } from "./hooks/useCopyCode";
+import { useUsingContext } from "./hooks/useUsingContext";
+import HeaderComponent from "./components/Header/index.vue";
+import { HoverButton, SvgIcon } from "@/components/common";
+import { useBasicLayout } from "@/hooks/useBasicLayout";
+import { useChatStore, usePromptStore, useUserStore } from "@/store";
+import { fetchChatAPIProcess } from "@/api";
+import { t } from "@/locales";
 
-let controller = new AbortController()
+let controller = new AbortController();
 
-const openLongReply = import.meta.env.VITE_GLOB_OPEN_LONG_REPLY === 'true'
+const openLongReply = import.meta.env.VITE_GLOB_OPEN_LONG_REPLY === "true";
 
-const route = useRoute()
-const dialog = useDialog()
-const ms = useMessage()
+const route = useRoute();
+const dialog = useDialog();
+const ms = useMessage();
 
-const chatStore = useChatStore()
-const userStore = useUserStore()
-useCopyCode()
+const chatStore = useChatStore();
+const userStore = useUserStore();
+useCopyCode();
 
-const { isMobile } = useBasicLayout()
-const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
-const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom } = useScroll()
-const { usingContext, toggleUsingContext } = useUsingContext()
+const { isMobile } = useBasicLayout();
+const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } =
+  useChat();
+const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom } = useScroll();
+const { usingContext, toggleUsingContext } = useUsingContext();
 
-const wxQRCodeUrl = ref('https://www.aifuturecome.com/wp-content/uploads/2023/05/我的.png')
+const wxQRCodeUrl = ref(
+  "https://www.aifuturecome.com/wp-content/uploads/2023/05/我的.png"
+);
 
-const { uuid } = route.params as { uuid: string }
-const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
-const uuidModel = computed(() => chatStore.getModelByUuid(+uuid))
-const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !item.error)))
+const { uuid } = route.params as { uuid: string };
+const dataSources = computed(() => chatStore.getChatByUuid(+uuid));
+const uuidModel = computed(() => chatStore.getModelByUuid(+uuid));
+const conversationList = computed(() =>
+  dataSources.value.filter((item) => !item.inversion && !item.error)
+);
 
 //对话显示内容再封装，未登陆会员显示温馨提示
 const showDataSources = computed(() => {
-    if (userStore.userInfo.is_login == false) {  
-        const prologue_text= `您好!
+  if (userStore.userInfo.is_login == false) {
+    const prologue_text = `您好!
         游客用户可免费试用10条对话体验
         左下角点击获取专属链接，每次邀请好友试用，可免费获得20条对话额度
-        更多功能体验，请注册并登陆会员
+        更多功能体验，或者体验GPT4，请注册并登陆会员
         扫描下面二维码添加好友，获得会员专属激活码
-        ![alt text](${wxQRCodeUrl.value})`
+        ![alt text](${wxQRCodeUrl.value})`;
 
-        //添加开场白
-        const prologue={
-            dateTime: new Date().toLocaleString(),
-            text: prologue_text,
-            inversion: false,
-            error: true,
-            loading: false,
-            conversationOptions:  null,
-		    requestOptions: { prompt: null, options: null },
-        }
-        let tmpDataSources = dataSources.value.slice()
-        tmpDataSources.unshift(prologue)
-        // console.log(tmpDataSources)
-        return tmpDataSources
-    }
-    else {
-        return dataSources.value
-    }
-})
+    //添加开场白
+    const prologue = {
+      dateTime: new Date().toLocaleString(),
+      text: prologue_text,
+      inversion: false,
+      error: true,
+      loading: false,
+      conversationOptions: null,
+      requestOptions: { prompt: null, options: null },
+    };
+    let tmpDataSources = dataSources.value.slice();
+    tmpDataSources.unshift(prologue);
+    // console.log(tmpDataSources)
+    return tmpDataSources;
+  } else {
+    return dataSources.value;
+  }
+});
 
-
-const prompt = ref<string>('')
-const loading = ref<boolean>(false)
-const inputRef = ref<Ref | null>(null)
+const prompt = ref<string>("");
+const loading = ref<boolean>(false);
+const inputRef = ref<Ref | null>(null);
 
 // 添加PromptStore
-const promptStore = usePromptStore()
+const promptStore = usePromptStore();
 
 // 使用storeToRefs，保证store修改后，联想部分能够重新渲染
-const { promptList: promptTemplate } = storeToRefs<any>(promptStore)
+const { promptList: promptTemplate } = storeToRefs<any>(promptStore);
 
 // 未知原因刷新页面，loading 状态不会重置，手动重置
 dataSources.value.forEach((item, index) => {
-  if (item.loading)
-    updateChatSome(+uuid, index, { loading: false })
-})
+  if (item.loading) updateChatSome(+uuid, index, { loading: false });
+});
 
 function handleSubmit() {
-    if (userStore.userInfo.is_login == false && userStore.userInfo.available_num <= 0) {
-        ms.error("对不起，你的体验对话额度已用完，更多功能体验请登陆会员，谢谢")
+  if (
+    userStore.userInfo.is_login == false &&
+    userStore.userInfo.available_num <= 0
+  ) {
+    ms.error("对不起，你的体验对话额度已用完，更多功能体验请登陆会员，谢谢");
     //   console.log('额度用完')
-    }
-    else{
-        onConversation()
-    }
+  } else {
+    onConversation();
+  }
 }
 
 async function onConversation() {
-  let message = prompt.value
+  let message = prompt.value;
 
-  if (loading.value)
-    return
+  if (loading.value) return;
 
-  if (!message || message.trim() === '')
-    return
+  if (!message || message.trim() === "") return;
 
-  controller = new AbortController()
+  controller = new AbortController();
 
-  addChat(
-    +uuid,
-    {
-      dateTime: new Date().toLocaleString(),
-      text: message,
-      inversion: true,
-      error: false,
-      conversationOptions: null,
-      requestOptions: { prompt: message, options: null },
-    },
-  )
-  scrollToBottom()
+  addChat(+uuid, {
+    dateTime: new Date().toLocaleString(),
+    text: message,
+    inversion: true,
+    error: false,
+    conversationOptions: null,
+    requestOptions: { prompt: message, options: null },
+  });
+  scrollToBottom();
 
-  loading.value = true
-  prompt.value = ''
+  loading.value = true;
+  prompt.value = "";
 
-  let options: Chat.ConversationRequest = {}
-  const lastContext = conversationList.value[conversationList.value.length - 1]?.conversationOptions
+  let options: Chat.ConversationRequest = {};
+  const lastContext =
+    conversationList.value[conversationList.value.length - 1]
+      ?.conversationOptions;
 
-  if (lastContext && usingContext.value)
-    options = { ...lastContext }
+  if (lastContext && usingContext.value) options = { ...lastContext };
 
-  addChat(
-    +uuid,
-    {
-      dateTime: new Date().toLocaleString(),
-      text: '',
-      loading: true,
-      inversion: false,
-      error: false,
-      conversationOptions: null,
-      requestOptions: { prompt: message, options: { ...options } },
-    },
-  )
-  scrollToBottom()
-    // console.log("uuidModel", uuidModel.value)
+  addChat(+uuid, {
+    dateTime: new Date().toLocaleString(),
+    text: "",
+    loading: true,
+    inversion: false,
+    error: false,
+    conversationOptions: null,
+    requestOptions: { prompt: message, options: { ...options } },
+  });
+  scrollToBottom();
+  // console.log("uuidModel", uuidModel.value)
   try {
-    let lastText = ''
+    let lastText = "";
     const fetchChatAPIOnce = async () => {
       await fetchChatAPIProcess<Chat.ConversationResponse>({
         model: uuidModel.value,
@@ -154,141 +157,136 @@ async function onConversation() {
         options,
         signal: controller.signal,
         onDownloadProgress: ({ event }) => {
-          const xhr = event.target
-          const { responseText } = xhr
+          const xhr = event.target;
+          const { responseText } = xhr;
           // Always process the final line
-          const lastIndex = responseText.lastIndexOf('\n', responseText.length - 2)
-          let chunk = responseText
-          if (lastIndex !== -1)
-            chunk = responseText.substring(lastIndex)
+          const lastIndex = responseText.lastIndexOf(
+            "\n",
+            responseText.length - 2
+          );
+          let chunk = responseText;
+          if (lastIndex !== -1) chunk = responseText.substring(lastIndex);
           try {
-            const data = JSON.parse(chunk)
-            updateChat(
-              +uuid,
-              dataSources.value.length - 1,
-              {
-                dateTime: new Date().toLocaleString(),
-                text: lastText + (data.text ?? ''),
-                inversion: false,
-                error: false,
-                loading: true,
-                conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
-                requestOptions: { prompt: message, options: { ...options } },
+            const data = JSON.parse(chunk);
+            updateChat(+uuid, dataSources.value.length - 1, {
+              dateTime: new Date().toLocaleString(),
+              text: lastText + (data.text ?? ""),
+              inversion: false,
+              error: false,
+              loading: true,
+              conversationOptions: {
+                conversationId: data.conversationId,
+                parentMessageId: data.id,
               },
-            )
+              requestOptions: { prompt: message, options: { ...options } },
+            });
 
-            if (openLongReply && data.detail.choices[0].finish_reason === 'length') {
-              options.parentMessageId = data.id
-              lastText = data.text
-              message = ''
-              return fetchChatAPIOnce()
+            if (
+              openLongReply &&
+              data.detail.choices[0].finish_reason === "length"
+            ) {
+              options.parentMessageId = data.id;
+              lastText = data.text;
+              message = "";
+              return fetchChatAPIOnce();
             }
-            scrollToBottomIfAtBottom()
-          }
-          catch (error) {
+            scrollToBottomIfAtBottom();
+          } catch (error) {
             // console.log(error)
             //
           }
         },
-      })
-      updateChatSome(+uuid, dataSources.value.length - 1, { loading: false })
-    }
-    if (userStore.userInfo.is_login == false) {  
-        userStore.userInfo.available_num--
+      });
+      updateChatSome(+uuid, dataSources.value.length - 1, { loading: false });
+    };
+    if (userStore.userInfo.is_login == false) {
+      userStore.userInfo.available_num--;
     }
 
-    if (userStore.userInfo.is_login == false && userStore.userInfo.available_num < 0) {
-        ms.warning("对不起，你的体验对话额度已用完，更多功能体验请登陆会员，谢谢")
-    //   console.log('额度用完')
-    }
-    else {
-      await fetchChatAPIOnce()
+    if (
+      userStore.userInfo.is_login == false &&
+      userStore.userInfo.available_num < 0
+    ) {
+      ms.warning(
+        "对不起，你的体验对话额度已用完，更多功能体验请登陆会员，谢谢"
+      );
+      //   console.log('额度用完')
+    } else {
+      await fetchChatAPIOnce();
       if (userStore.userInfo.is_login == false)
-        userStore.updateUserInfo({ available_num: userStore.userInfo.available_num, is_new: false })
+        userStore.updateUserInfo({
+          available_num: userStore.userInfo.available_num,
+          is_new: false,
+        });
     }
-  }
-  catch (error: any) {
-    const errorMessage = error?.message ?? t('common.wrong')
-    if (error.message === 'canceled') {
-      updateChatSome(
-        +uuid,
-        dataSources.value.length - 1,
-        {
-          loading: false,
-        },
-      )
-      scrollToBottomIfAtBottom()
-      return
+  } catch (error: any) {
+    const errorMessage = error?.message ?? t("common.wrong");
+    if (error.message === "canceled") {
+      updateChatSome(+uuid, dataSources.value.length - 1, {
+        loading: false,
+      });
+      scrollToBottomIfAtBottom();
+      return;
     }
     if (userStore.userInfo.is_login == false)
-        userStore.updateUserInfo({ available_num: userStore.userInfo.available_num })
-    const currentChat = getChatByUuidAndIndex(+uuid, dataSources.value.length - 1)
+      userStore.updateUserInfo({
+        available_num: userStore.userInfo.available_num,
+      });
+    const currentChat = getChatByUuidAndIndex(
+      +uuid,
+      dataSources.value.length - 1
+    );
 
-    if (currentChat?.text && currentChat.text !== '') {
-      updateChatSome(
-        +uuid,
-        dataSources.value.length - 1,
-        {
-          text: `${currentChat.text}\n[${errorMessage}]`,
-          error: false,
-          loading: false,
-        },
-      )
-      return
+    if (currentChat?.text && currentChat.text !== "") {
+      updateChatSome(+uuid, dataSources.value.length - 1, {
+        text: `${currentChat.text}\n[${errorMessage}]`,
+        error: false,
+        loading: false,
+      });
+      return;
     }
 
-    updateChat(
-      +uuid,
-      dataSources.value.length - 1,
-      {
-        dateTime: new Date().toLocaleString(),
-        text: errorMessage,
-        inversion: false,
-        error: true,
-        loading: false,
-        conversationOptions: null,
-        requestOptions: { prompt: message, options: { ...options } },
-      },
-    )
-    scrollToBottomIfAtBottom()
-  }
-  finally {
-    loading.value = false
+    updateChat(+uuid, dataSources.value.length - 1, {
+      dateTime: new Date().toLocaleString(),
+      text: errorMessage,
+      inversion: false,
+      error: true,
+      loading: false,
+      conversationOptions: null,
+      requestOptions: { prompt: message, options: { ...options } },
+    });
+    scrollToBottomIfAtBottom();
+  } finally {
+    loading.value = false;
   }
 }
 
 async function onRegenerate(index: number) {
-  if (loading.value)
-    return
-  controller = new AbortController()
+  if (loading.value) return;
+  controller = new AbortController();
 
-  const { requestOptions } = dataSources.value[index]
+  const { requestOptions } = dataSources.value[index];
 
-  let message = requestOptions?.prompt ?? ''
+  let message = requestOptions?.prompt ?? "";
 
-  let options: Chat.ConversationRequest = {}
+  let options: Chat.ConversationRequest = {};
 
-  if (requestOptions.options)
-    options = { ...requestOptions.options }
+  if (requestOptions.options) options = { ...requestOptions.options };
 
-  loading.value = true
+  loading.value = true;
 
-  updateChat(
-    +uuid,
-    index,
-    {
-      dateTime: new Date().toLocaleString(),
-      text: '',
-      inversion: false,
-      error: false,
-      loading: true,
-      conversationOptions: null,
-      requestOptions: { prompt: message, options: { ...options } },
-    },
-  )
+  updateChat(+uuid, index, {
+    dateTime: new Date().toLocaleString(),
+    text: "",
+    inversion: false,
+    error: false,
+    loading: true,
+    conversationOptions: null,
+    requestOptions: { prompt: message, options: { ...options } },
+  });
 
   try {
-    let lastText = ''
+    let lastText = "";
     const fetchChatAPIOnce = async () => {
       await fetchChatAPIProcess<Chat.ConversationResponse>({
         model: uuidModel.value,
@@ -296,169 +294,156 @@ async function onRegenerate(index: number) {
         options,
         signal: controller.signal,
         onDownloadProgress: ({ event }) => {
-          const xhr = event.target
-          const { responseText } = xhr
+          const xhr = event.target;
+          const { responseText } = xhr;
           // Always process the final line
-          const lastIndex = responseText.lastIndexOf('\n', responseText.length - 2)
-          let chunk = responseText
-          if (lastIndex !== -1)
-            chunk = responseText.substring(lastIndex)
+          const lastIndex = responseText.lastIndexOf(
+            "\n",
+            responseText.length - 2
+          );
+          let chunk = responseText;
+          if (lastIndex !== -1) chunk = responseText.substring(lastIndex);
           try {
-            const data = JSON.parse(chunk)
-            updateChat(
-              +uuid,
-              index,
-              {
-                dateTime: new Date().toLocaleString(),
-                text: lastText + (data.text ?? ''),
-                inversion: false,
-                error: false,
-                loading: true,
-                conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
-                requestOptions: { prompt: message, options: { ...options } },
+            const data = JSON.parse(chunk);
+            updateChat(+uuid, index, {
+              dateTime: new Date().toLocaleString(),
+              text: lastText + (data.text ?? ""),
+              inversion: false,
+              error: false,
+              loading: true,
+              conversationOptions: {
+                conversationId: data.conversationId,
+                parentMessageId: data.id,
               },
-            )
+              requestOptions: { prompt: message, options: { ...options } },
+            });
 
-            if (openLongReply && data.detail.choices[0].finish_reason === 'length') {
-              options.parentMessageId = data.id
-              lastText = data.text
-              message = ''
-              return fetchChatAPIOnce()
+            if (
+              openLongReply &&
+              data.detail.choices[0].finish_reason === "length"
+            ) {
+              options.parentMessageId = data.id;
+              lastText = data.text;
+              message = "";
+              return fetchChatAPIOnce();
             }
-          }
-          catch (error) {
+          } catch (error) {
             //
           }
         },
-      })
-      updateChatSome(+uuid, index, { loading: false })
-    }
-    await fetchChatAPIOnce()
-  }
-  catch (error: any) {
-    if (error.message === 'canceled') {
-      updateChatSome(
-        +uuid,
-        index,
-        {
-          loading: false,
-        },
-      )
-      return
-    }
-
-    const errorMessage = error?.message ?? t('common.wrong')
-
-    updateChat(
-      +uuid,
-      index,
-      {
-        dateTime: new Date().toLocaleString(),
-        text: errorMessage,
-        inversion: false,
-        error: true,
+      });
+      updateChatSome(+uuid, index, { loading: false });
+    };
+    await fetchChatAPIOnce();
+  } catch (error: any) {
+    if (error.message === "canceled") {
+      updateChatSome(+uuid, index, {
         loading: false,
-        conversationOptions: null,
-        requestOptions: { prompt: message, options: { ...options } },
-      },
-    )
-  }
-  finally {
-    loading.value = false
+      });
+      return;
+    }
+
+    const errorMessage = error?.message ?? t("common.wrong");
+
+    updateChat(+uuid, index, {
+      dateTime: new Date().toLocaleString(),
+      text: errorMessage,
+      inversion: false,
+      error: true,
+      loading: false,
+      conversationOptions: null,
+      requestOptions: { prompt: message, options: { ...options } },
+    });
+  } finally {
+    loading.value = false;
   }
 }
 
 function handleExport() {
-  if (loading.value)
-    return
+  if (loading.value) return;
 
   const d = dialog.warning({
-    title: t('chat.exportImage'),
-    content: t('chat.exportImageConfirm'),
-    positiveText: t('common.yes'),
-    negativeText: t('common.no'),
+    title: t("chat.exportImage"),
+    content: t("chat.exportImageConfirm"),
+    positiveText: t("common.yes"),
+    negativeText: t("common.no"),
     onPositiveClick: async () => {
       try {
-        d.loading = true
-        const ele = document.getElementById('image-wrapper')
+        d.loading = true;
+        const ele = document.getElementById("image-wrapper");
         const canvas = await html2canvas(ele as HTMLDivElement, {
           useCORS: true,
-        })
-        const imgUrl = canvas.toDataURL('image/png')
-        const tempLink = document.createElement('a')
-        tempLink.style.display = 'none'
-        tempLink.href = imgUrl
-        tempLink.setAttribute('download', 'chat-shot.png')
-        if (typeof tempLink.download === 'undefined')
-          tempLink.setAttribute('target', '_blank')
+        });
+        const imgUrl = canvas.toDataURL("image/png");
+        const tempLink = document.createElement("a");
+        tempLink.style.display = "none";
+        tempLink.href = imgUrl;
+        tempLink.setAttribute("download", "chat-shot.png");
+        if (typeof tempLink.download === "undefined")
+          tempLink.setAttribute("target", "_blank");
 
-        document.body.appendChild(tempLink)
-        tempLink.click()
-        document.body.removeChild(tempLink)
-        window.URL.revokeObjectURL(imgUrl)
-        d.loading = false
-        ms.success(t('chat.exportSuccess'))
-        Promise.resolve()
-      }
-      catch (error: any) {
-        ms.error(t('chat.exportFailed'))
-      }
-      finally {
-        d.loading = false
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        document.body.removeChild(tempLink);
+        window.URL.revokeObjectURL(imgUrl);
+        d.loading = false;
+        ms.success(t("chat.exportSuccess"));
+        Promise.resolve();
+      } catch (error: any) {
+        ms.error(t("chat.exportFailed"));
+      } finally {
+        d.loading = false;
       }
     },
-  })
+  });
 }
 
 function handleDelete(index: number) {
-  if (loading.value)
-    return
+  if (loading.value) return;
 
   dialog.warning({
-    title: t('chat.deleteMessage'),
-    content: t('chat.deleteMessageConfirm'),
-    positiveText: t('common.yes'),
-    negativeText: t('common.no'),
+    title: t("chat.deleteMessage"),
+    content: t("chat.deleteMessageConfirm"),
+    positiveText: t("common.yes"),
+    negativeText: t("common.no"),
     onPositiveClick: () => {
-      chatStore.deleteChatByUuid(+uuid, index)
+      chatStore.deleteChatByUuid(+uuid, index);
     },
-  })
+  });
 }
 
 function handleClear() {
-  if (loading.value)
-    return
+  if (loading.value) return;
 
   dialog.warning({
-    title: t('chat.clearChat'),
-    content: t('chat.clearChatConfirm'),
-    positiveText: t('common.yes'),
-    negativeText: t('common.no'),
+    title: t("chat.clearChat"),
+    content: t("chat.clearChatConfirm"),
+    positiveText: t("common.yes"),
+    negativeText: t("common.no"),
     onPositiveClick: () => {
-      chatStore.clearChatByUuid(+uuid)
+      chatStore.clearChatByUuid(+uuid);
     },
-  })
+  });
 }
 
 function handleEnter(event: KeyboardEvent) {
   if (!isMobile.value) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault()
-      handleSubmit()
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSubmit();
     }
-  }
-  else {
-    if (event.key === 'Enter' && event.ctrlKey) {
-      event.preventDefault()
-      handleSubmit()
+  } else {
+    if (event.key === "Enter" && event.ctrlKey) {
+      event.preventDefault();
+      handleSubmit();
     }
   }
 }
 
 function handleStop() {
   if (loading.value) {
-    controller.abort()
-    loading.value = false
+    controller.abort();
+    loading.value = false;
   }
 }
 
@@ -466,55 +451,62 @@ function handleStop() {
 // 搜索选项计算，这里使用value作为索引项，所以当出现重复value时渲染异常(多项同时出现选中效果)
 // 理想状态下其实应该是key作为索引项,但官方的renderOption会出现问题，所以就需要value反renderLabel实现
 const searchOptions = computed(() => {
-  if (prompt.value.startsWith('/')) {
-    return promptTemplate.value.filter((item: { key: string }) => item.key.toLowerCase().includes(prompt.value.substring(1).toLowerCase())).map((obj: { value: any }) => {
-      return {
-        label: obj.value,
-        value: obj.value,
-      }
-    })
+  if (prompt.value.startsWith("/")) {
+    return promptTemplate.value
+      .filter((item: { key: string }) =>
+        item.key.toLowerCase().includes(prompt.value.substring(1).toLowerCase())
+      )
+      .map((obj: { value: any }) => {
+        return {
+          label: obj.value,
+          value: obj.value,
+        };
+      });
+  } else {
+    return [];
   }
-  else {
-    return []
-  }
-})
+});
 
 // value反渲染key
 const renderOption = (option: { label: string }) => {
   for (const i of promptTemplate.value) {
-    if (i.value === option.label)
-      return [i.key]
+    if (i.value === option.label) return [i.key];
   }
-  return []
-}
+  return [];
+};
 
 const placeholder = computed(() => {
-  if (isMobile.value)
-    return t('chat.placeholderMobile')
-  return t('chat.placeholder')
-})
+  if (isMobile.value) return t("chat.placeholderMobile");
+  return t("chat.placeholder");
+});
 
 const buttonDisabled = computed(() => {
-  return loading.value || !prompt.value || prompt.value.trim() === ''
-})
+  return loading.value || !prompt.value || prompt.value.trim() === "";
+});
 
 const footerClass = computed(() => {
-  let classes = ['p-4']
+  let classes = ["p-4"];
   if (isMobile.value)
-    classes = ['sticky', 'left-0', 'bottom-0', 'right-0', 'p-2', 'pr-3', 'overflow-hidden']
-  return classes
-})
+    classes = [
+      "sticky",
+      "left-0",
+      "bottom-0",
+      "right-0",
+      "p-2",
+      "pr-3",
+      "overflow-hidden",
+    ];
+  return classes;
+});
 
 onMounted(() => {
-  scrollToBottom()
-  if (inputRef.value && !isMobile.value)
-    inputRef.value?.focus()
-})
+  scrollToBottom();
+  if (inputRef.value && !isMobile.value) inputRef.value?.focus();
+});
 
 onUnmounted(() => {
-  if (loading.value)
-    controller.abort()
-})
+  if (loading.value) controller.abort();
+});
 </script>
 
 <template>
@@ -530,14 +522,20 @@ onUnmounted(() => {
     />
 
     <main class="flex-1 overflow-hidden">
-      <div id="scrollRef" ref="scrollRef" class="h-full overflow-hidden overflow-y-auto">
+      <div
+        id="scrollRef"
+        ref="scrollRef"
+        class="h-full overflow-hidden overflow-y-auto"
+      >
         <div
           id="image-wrapper"
           class="w-full max-w-screen-xl m-auto dark:bg-[#101014]"
           :class="[isMobile ? 'p-2' : 'p-4']"
         >
           <template v-if="!showDataSources.length">
-            <div class="flex items-center justify-center mt-4 text-center text-neutral-300">
+            <div
+              class="flex items-center justify-center mt-4 text-center text-neutral-300"
+            >
               <SvgIcon icon="ri:bubble-chart-fill" class="mr-2 text-3xl" />
               <span>Aha~</span>
             </div>
@@ -582,11 +580,21 @@ onUnmounted(() => {
             </span>
           </HoverButton>
           <HoverButton v-if="!isMobile" @click="toggleUsingContext">
-            <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
+            <span
+              class="text-xl"
+              :class="{
+                'text-[#4b9e5f]': usingContext,
+                'text-[#a8071a]': !usingContext,
+              }"
+            >
               <SvgIcon icon="ri:chat-history-line" />
             </span>
           </HoverButton>
-          <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
+          <NAutoComplete
+            v-model:value="prompt"
+            :options="searchOptions"
+            :render-label="renderOption"
+          >
             <template #default="{ handleInput, handleBlur, handleFocus }">
               <NInput
                 ref="inputRef"
@@ -601,7 +609,11 @@ onUnmounted(() => {
               />
             </template>
           </NAutoComplete>
-          <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
+          <NButton
+            type="primary"
+            :disabled="buttonDisabled"
+            @click="handleSubmit"
+          >
             <template #icon>
               <span class="dark:text-black">
                 <SvgIcon icon="ri:send-plane-fill" />
